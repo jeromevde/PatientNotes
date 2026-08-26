@@ -49,8 +49,8 @@ export function ComplementCard({
             <p
               className={
                 active
-                  ? "rounded-sm bg-mark-on px-0.5 text-sm font-medium text-card"
-                  : "text-sm font-medium"
+                  ? "quote-paint w-fit bg-mark-on text-sm font-medium leading-relaxed text-card"
+                  : "text-sm font-medium leading-relaxed"
               }
             >
               {product?.nom ?? produitId}

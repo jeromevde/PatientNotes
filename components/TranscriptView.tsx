@@ -65,8 +65,8 @@ export function TranscriptView({
         }
         className={
           isActive
-            ? "rounded-sm bg-mark-on text-card"
-            : "rounded-sm bg-mark text-ink"
+            ? "quote-paint bg-mark-on text-card"
+            : "quote-paint bg-mark text-ink"
         }
       >
         {seg.text}

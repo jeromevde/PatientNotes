@@ -62,6 +62,18 @@ input {
   caret-color: var(--ink);
 }
 
+/* Transcript quotes and focused facts share one bar height: the line box. */
+.quote-paint {
+  border-radius: 2px;
+  padding-inline: 0.125rem;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+mark.quote-paint {
+  padding-block: 2px;
+}
+
 textarea::selection {
   color: transparent;
   background: color-mix(in srgb, var(--accent) 30%, transparent);

@@ -55,76 +55,77 @@ function ClaimList({
         const isAdd = i === items.length;
         const on = Boolean(focusQuote) && item.quote === focusQuote;
         return (
-          <input
-            key={i}
-            ref={(el) => {
-              inputs.current[i] = el;
-            }}
-            value={item.text}
-            aria-label={isAdd ? "Ajouter un fait" : "Fait"}
-            onFocus={() => onFocusQuote(item.quote)}
-            onChange={(e) => {
-              const text = e.target.value;
-              if (isAdd) {
-                if (!text) return;
-                onChange([...items, { text, quote: null }]);
-                return;
-              }
-              onChange(
-                items.map((c, j) => (j === i ? { ...c, text } : c)),
-              );
-            }}
-            onKeyDown={(e) => {
-              const caret = e.currentTarget.selectionStart ?? 0;
-              const end = e.currentTarget.selectionEnd ?? 0;
-              const atStart = caret === 0 && end === 0;
-              const atEnd = caret === end && caret === e.currentTarget.value.length;
-
-              if (e.key === "ArrowDown" && i < last) {
-                e.preventDefault();
-                go(i + 1, caret);
-                return;
-              }
-              if (e.key === "ArrowUp" && i > 0) {
-                e.preventDefault();
-                go(i - 1, caret);
-                return;
-              }
-              if (e.key === "ArrowLeft" && atStart && i > 0) {
-                e.preventDefault();
-                go(i - 1, "end");
-                return;
-              }
-              if (e.key === "ArrowRight" && atEnd && i < last) {
-                e.preventDefault();
-                go(i + 1, 0);
-                return;
-              }
-              if (e.key === "Enter") {
-                e.preventDefault();
-                if (isAdd) return;
-                if (i === items.length - 1) {
-                  go(items.length, 0);
+          <div key={i} className="py-1.5">
+            <input
+              ref={(el) => {
+                inputs.current[i] = el;
+              }}
+              value={item.text}
+              aria-label={isAdd ? "Ajouter un fait" : "Fait"}
+              onFocus={() => onFocusQuote(item.quote)}
+              onChange={(e) => {
+                const text = e.target.value;
+                if (isAdd) {
+                  if (!text) return;
+                  onChange([...items, { text, quote: null }]);
                   return;
                 }
-                onChange([
-                  ...items.slice(0, i + 1),
-                  { text: "", quote: null },
-                  ...items.slice(i + 1),
-                ]);
-                focusAt.current = i + 1;
-                return;
-              }
-              if (e.key === "Backspace" && !isAdd && item.text === "") {
-                e.preventDefault();
-                onChange(items.filter((_, j) => j !== i));
-                focusAt.current = Math.max(0, i - 1);
-              }
-            }}
-            className={`block w-full rounded-sm px-0.5 py-1.5 text-sm leading-relaxed outline-none ${
-              on ? "bg-mark-on text-card" : "bg-transparent"
-            }`}
-          />
+                onChange(
+                  items.map((c, j) => (j === i ? { ...c, text } : c)),
+                );
+              }}
+              onKeyDown={(e) => {
+                const caret = e.currentTarget.selectionStart ?? 0;
+                const end = e.currentTarget.selectionEnd ?? 0;
+                const atStart = caret === 0 && end === 0;
+                const atEnd = caret === end && caret === e.currentTarget.value.length;
+
+                if (e.key === "ArrowDown" && i < last) {
+                  e.preventDefault();
+                  go(i + 1, caret);
+                  return;
+                }
+                if (e.key === "ArrowUp" && i > 0) {
+                  e.preventDefault();
+                  go(i - 1, caret);
+                  return;
+                }
+                if (e.key === "ArrowLeft" && atStart && i > 0) {
+                  e.preventDefault();
+                  go(i - 1, "end");
+                  return;
+                }
+                if (e.key === "ArrowRight" && atEnd && i < last) {
+                  e.preventDefault();
+                  go(i + 1, 0);
+                  return;
+                }
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  if (isAdd) return;
+                  if (i === items.length - 1) {
+                    go(items.length, 0);
+                    return;
+                  }
+                  onChange([
+                    ...items.slice(0, i + 1),
+                    { text: "", quote: null },
+                    ...items.slice(i + 1),
+                  ]);
+                  focusAt.current = i + 1;
+                  return;
+                }
+                if (e.key === "Backspace" && !isAdd && item.text === "") {
+                  e.preventDefault();
+                  onChange(items.filter((_, j) => j !== i));
+                  focusAt.current = Math.max(0, i - 1);
+                }
+              }}
+              className={`quote-paint block w-full text-sm leading-relaxed outline-none ${
+                on ? "bg-mark-on text-card" : "bg-transparent"
+              }`}
+            />
+          </div>
         );
       })}
     </div>
