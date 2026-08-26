@@ -9,6 +9,12 @@ import { formatDate } from "@/lib/format";
 export const fieldBox =
   "mt-1 w-full rounded-lg border border-line bg-white px-2 py-1.5 text-sm text-ink";
 
+const toneEdge = {
+  ajout: "border-l-accent",
+  maintien: "border-l-keep",
+  arret: "border-l-warn",
+};
+
 export function ComplementCard({
   produitId,
   depuis,
@@ -17,6 +23,7 @@ export function ComplementCard({
   children,
   className,
   active = false,
+  tone,
   ...liProps
 }: {
   produitId: string;
@@ -26,6 +33,7 @@ export function ComplementCard({
   children?: ReactNode;
   className?: string;
   active?: boolean;
+  tone?: "ajout" | "maintien" | "arret";
 } & Omit<LiHTMLAttributes<HTMLLIElement>, "children">) {
   const product = productById(produitId);
   const meta = [
@@ -35,11 +43,13 @@ export function ComplementCard({
     .filter(Boolean)
     .join(" · ");
 
+  const edge = tone ? `border-l-[3px] ${toneEdge[tone]}` : "";
+
   return (
     <li
       {...liProps}
       data-produit-id={produitId}
-      className={`rounded-xl border border-line bg-card p-4 ${className ?? ""}`}
+      className={`rounded-xl border border-line bg-card p-4 ${edge} ${className ?? ""}`}
     >
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="flex items-center gap-3">

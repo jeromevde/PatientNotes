@@ -1,11 +1,9 @@
 "use client";
 
-// Editable supplements on a consultation note. Same cream card as dossier recs.
-// Search the catalogue to add; same ingredient replaces the row; drag to reorder
-// (other cards slide via the Web Animations API).
+// Editable supplements, grouped by Arrêt / Ajout / Maintien.
+// The section is the action — no dropdown, no drag. Search adds to Ajout.
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { flushSync } from "react-dom";
 import {
   ComplementCard,
   ComplementField,
@@ -18,38 +16,71 @@ import { complementHighlight } from "@/lib/quotes";
 import { scrollIfNeeded } from "@/lib/scroll";
 import type { ComplementAction, ComplementRec } from "@/lib/types";
 
+const groups: {
+  action: ComplementAction;
+  label: string;
+  title: string;
+  empty: string;
+}[] = [
+  {
+    action: "arret",
+    label: "Arrêt",
+    title: "text-warn",
+    empty: "Aucun arrêt.",
+  },
+  {
+    action: "ajout",
+    label: "Ajout",
+    title: "text-accent",
+    empty: "Aucun ajout.",
+  },
+  {
+    action: "maintien",
+    label: "Maintien",
+    title: "text-keep",
+    empty: "Aucun maintien.",
+  },
+];
+
+const otherActions: Record<ComplementAction, ComplementAction[]> = {
+  arret: ["ajout", "maintien"],
+  ajout: ["arret", "maintien"],
+  maintien: ["arret", "ajout"],
+};
+
+const actionLabel: Record<ComplementAction, string> = {
+  arret: "Arrêt",
+  ajout: "Ajout",
+  maintien: "Maintien",
+};
+
 export function ComplementList({
   items,
   transcript,
   onPatch,
   onRemove,
   onAdd,
-  onReorder,
   focusQuote,
   onFocusQuote,
 }: {
   items: ComplementRec[];
   transcript: string;
-  onPatch: (index: number, patch: Partial<ComplementRec>) => void;
-  onRemove: (index: number) => void;
+  onPatch: (produit_id: string, patch: Partial<ComplementRec>) => void;
+  onRemove: (produit_id: string) => void;
   onAdd: (produit_id: string) => void;
-  onReorder: (items: ComplementRec[]) => void;
   focusQuote: string | null;
   onFocusQuote: (quote: string | null) => void;
 }) {
-  const grabIndex = useRef<number | null>(null);
-  const draggingId = useRef<string | null>(null);
-  const listRef = useRef<HTMLUListElement>(null);
-  const [dragging, setDragging] = useState<string | null>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!focusQuote || !listRef.current) return;
+    if (!focusQuote || !rootRef.current) return;
     const id = items.find(
       (c) => complementHighlight(transcript, c.produit_id) === focusQuote,
     )?.produit_id;
     if (!id) return;
-    const el = listRef.current.querySelector(`[data-produit-id="${id}"]`);
-    const pane = listRef.current.closest("[data-notes-scroll]");
+    const el = rootRef.current.querySelector(`[data-produit-id="${id}"]`);
+    const pane = rootRef.current.closest("[data-notes-scroll]");
     if (el instanceof HTMLElement && pane instanceof HTMLElement) {
       scrollIfNeeded(el, pane);
     }
@@ -58,151 +89,116 @@ export function ComplementList({
   function pick(produit_id: string) {
     const incoming = productById(produit_id);
     if (!incoming) return;
-    const existing = items.findIndex(
+    const existing = items.find(
       (item) => productById(item.produit_id)?.ingredient === incoming.ingredient,
     );
-    if (existing >= 0) {
-      onPatch(existing, { produit_id });
+    if (existing) {
+      onPatch(existing.produit_id, { produit_id });
       return;
     }
     onAdd(produit_id);
   }
 
-  function moveTo(from: number, to: number) {
-    if (from === to || from < 0 || to < 0) return;
-    const next = [...items];
-    const [row] = next.splice(from, 1);
-    next.splice(to, 0, row);
-
-    const root = listRef.current;
-    const first = new Map<string, DOMRect>();
-    if (root) {
-      for (const node of root.children) {
-        const el = node as HTMLElement;
-        const id = el.dataset.produitId;
-        if (id) first.set(id, el.getBoundingClientRect());
-      }
-    }
-
-    flushSync(() => onReorder(next));
-
-    if (!root) return;
-    for (const node of root.children) {
-      const el = node as HTMLElement;
-      const id = el.dataset.produitId;
-      if (!id || id === draggingId.current) continue;
-      const before = first.get(id);
-      if (!before) continue;
-      const after = el.getBoundingClientRect();
-      const dy = before.top - after.top;
-      if (Math.abs(dy) < 1) continue;
-      el.animate(
-        [{ transform: `translateY(${dy}px)` }, { transform: "none" }],
-        { duration: 180, easing: "ease-out" },
-      );
-    }
-  }
-
   return (
-    <div className="space-y-3">
+    <div ref={rootRef} className="space-y-6">
       <CatalogSearch takenIds={items.map((c) => c.produit_id)} onPick={pick} />
 
-      <ul ref={listRef} className="space-y-3">
-        {items.map((item, i) => (
-          <ComplementCard
-            key={item.produit_id}
-            produitId={item.produit_id}
-            draggable
-            onDragStart={(e) => {
-              if (grabIndex.current !== i) {
-                e.preventDefault();
-                return;
-              }
-              draggingId.current = item.produit_id;
-              setDragging(item.produit_id);
-              e.dataTransfer.setData("text/plain", item.produit_id);
-              e.dataTransfer.effectAllowed = "move";
-            }}
-            onDragOver={(e) => {
-              e.preventDefault();
-              const from = items.findIndex(
-                (row) => row.produit_id === draggingId.current,
-              );
-              moveTo(from, i);
-            }}
-            onDrop={(e) => e.preventDefault()}
-            onDragEnd={() => {
-              draggingId.current = null;
-              grabIndex.current = null;
-              setDragging(null);
-            }}
-            onClick={() =>
-              onFocusQuote(complementHighlight(transcript, item.produit_id))
-            }
-            active={
-              Boolean(focusQuote) &&
-              complementHighlight(transcript, item.produit_id) === focusQuote
-            }
-            className={dragging === item.produit_id ? "opacity-40" : ""}
-            leading={
-              <button
-                type="button"
-                aria-label="Déplacer"
-                className="cursor-grab text-muted hover:text-ink active:cursor-grabbing"
-                onMouseDown={() => {
-                  grabIndex.current = i;
-                }}
-              >
-                ⠿
-              </button>
-            }
-            trailing={
-              <button
-                type="button"
-                onClick={() => onRemove(i)}
-                className="text-xs text-warn hover:underline"
-              >
-                Retirer
-              </button>
-            }
-          >
-            <div className="mt-3 grid gap-2 sm:grid-cols-2">
-              <ComplementField label="Action">
-                <select
-                  value={item.action}
-                  onChange={(e) =>
-                    onPatch(i, { action: e.target.value as ComplementAction })
-                  }
-                  className={fieldBox}
-                >
-                  <option value="ajout">Ajout</option>
-                  <option value="maintien">Maintien</option>
-                  <option value="arret">Arrêt</option>
-                </select>
-              </ComplementField>
-              <ComplementField label="Durée">
-                <input
-                  value={item.duree ?? ""}
-                  onChange={(e) => onPatch(i, { duree: e.target.value || null })}
-                  placeholder="ex. 1 mois"
-                  className={fieldBox}
-                />
-              </ComplementField>
-              <ComplementField label="Posologie" className="sm:col-span-2">
-                <input
-                  value={item.posologie ?? ""}
-                  onChange={(e) =>
-                    onPatch(i, { posologie: e.target.value || null })
-                  }
-                  placeholder="ex. 1 gélule matin"
-                  className={fieldBox}
-                />
-              </ComplementField>
-            </div>
-            <Quote text={item.quote} />
-          </ComplementCard>
-        ))}
-      </ul>
+      {groups.map((group) => {
+        const rows = items.filter((item) => item.action === group.action);
+        return (
+          <section key={group.action}>
+            <h3
+              className={`text-xs font-medium uppercase tracking-[0.14em] ${group.title}`}
+            >
+              {group.label}
+            </h3>
+            {rows.length === 0 ? (
+              <p className="mt-2 text-sm text-muted">{group.empty}</p>
+            ) : (
+              <ul className="mt-2 space-y-3">
+                {rows.map((item) => (
+                  <ComplementCard
+                    key={item.produit_id}
+                    produitId={item.produit_id}
+                    tone={item.action}
+                    onClick={() =>
+                      onFocusQuote(
+                        complementHighlight(transcript, item.produit_id),
+                      )
+                    }
+                    active={
+                      Boolean(focusQuote) &&
+                      complementHighlight(transcript, item.produit_id) ===
+                        focusQuote
+                    }
+                    trailing={
+                      <div className="flex flex-wrap items-center gap-2">
+                        {otherActions[item.action].map((next) => (
+                          <button
+                            key={next}
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onPatch(item.produit_id, { action: next });
+                            }}
+                            className="text-xs text-muted hover:text-ink hover:underline"
+                          >
+                            {actionLabel[next]}
+                          </button>
+                        ))}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onRemove(item.produit_id);
+                          }}
+                          className="text-xs text-warn hover:underline"
+                        >
+                          Retirer
+                        </button>
+                      </div>
+                    }
+                  >
+                    <div
+                      className="mt-3 grid gap-2 sm:grid-cols-2"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <ComplementField label="Durée">
+                        <input
+                          value={item.duree ?? ""}
+                          onChange={(e) =>
+                            onPatch(item.produit_id, {
+                              duree: e.target.value || null,
+                            })
+                          }
+                          placeholder="ex. 1 mois"
+                          className={fieldBox}
+                        />
+                      </ComplementField>
+                      <ComplementField
+                        label="Posologie"
+                        className="sm:col-span-2"
+                      >
+                        <input
+                          value={item.posologie ?? ""}
+                          onChange={(e) =>
+                            onPatch(item.produit_id, {
+                              posologie: e.target.value || null,
+                            })
+                          }
+                          placeholder="ex. 1 gélule matin"
+                          className={fieldBox}
+                        />
+                      </ComplementField>
+                    </div>
+                    <Quote text={item.quote} />
+                  </ComplementCard>
+                ))}
+              </ul>
+            )}
+          </section>
+        );
+      })}
     </div>
   );
 }

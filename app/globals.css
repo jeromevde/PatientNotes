@@ -14,8 +14,8 @@
   --warn-soft: #f3e4d1;
   --mark: #e4e0d8;
   --mark-on: #8a8680;
-  --ok: #215c3a;
-  --ok-soft: #dceadf;
+  --keep: #3a5470;
+  --keep-soft: #e4eaf0;
 }
 
 @theme inline {
@@ -30,6 +30,8 @@
   --color-warn-soft: var(--warn-soft);
   --color-mark: var(--mark);
   --color-mark-on: var(--mark-on);
+  --color-keep: var(--keep);
+  --color-keep-soft: var(--keep-soft);
 }
 
 * {

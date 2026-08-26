@@ -60,9 +60,12 @@ Règles:
 - Motif, anamnèse, hygiène de vie et suivi : tableau de faits atomiques. Chaque item = une phrase clinique ("text") + un "quote" recopié TEL QUEL depuis le transcript (sous-chaîne exacte), ou null. Un fait = une phrase. Pas de paragraphe unique.
 - Les faits et les quotes viennent UNIQUEMENT du transcript. Jamais de l'historique, des labs, ni d'un autre champ dossier. Pas d'extrait exact → quote = null.
 - Ne pas inventer de valeurs de laboratoire. Mentionne un bilan seulement s'il est dit dans le transcript.
-- Les compléments: produit_id DOIT être un id du catalogue. Plusieurs SKUs peuvent partager le même ingredient (labs différents) — choisis un id, le praticien pourra en changer. Pour un maintien, garde l'id déjà en cours.
-- La liste "déjà en cours" sert UNIQUEMENT à choisir action (maintien / ajout / arrêt). Ce n'est pas une source de faits ni de quotes.
-- action: "maintien" si déjà en cours et on continue, "ajout" si nouveau, "arret" si on arrête.
+- Compléments: range CHAQUE produit dans exactement une des trois catégories:
+  - "arret" — déjà en cours ET le praticien dit d'arrêter
+  - "ajout" — nouveau, absent de la liste déjà en cours
+  - "maintien" — déjà en cours ET on continue. Si un complément en cours n'est pas mentionné, mets-le en maintien (ne suppose pas un arrêt).
+- produit_id DOIT être un id du catalogue. Plusieurs SKUs peuvent partager le même ingredient — choisis un id. Pour maintien ou arrêt, garde l'id déjà en cours.
+- La liste "déjà en cours" sert UNIQUEMENT à classer (arret / ajout / maintien). Ce n'est pas une source de faits ni de quotes.
 - Réponds UNIQUEMENT avec un objet JSON valide. Pas de markdown, pas de backticks.
 
 Catalogue:
@@ -93,7 +96,11 @@ Forme JSON attendue:
   "source": "transcript",
   "motif": [{ "text": "une phrase", "quote": "extrait exact du transcript" }],
   "anamnese": [{ "text": "une phrase", "quote": "extrait exact du transcript" }],
-  "complements": [{ "produit_id": "prd_...", "action": "maintien|ajout|arret", "posologie": "...", "duree": null, "quote": "..." }],
+  "complements": [
+    { "produit_id": "prd_...", "action": "arret", "posologie": null, "duree": null, "quote": "extrait exact du transcript" },
+    { "produit_id": "prd_...", "action": "ajout", "posologie": "...", "duree": "...", "quote": "..." },
+    { "produit_id": "prd_...", "action": "maintien", "posologie": "...", "duree": null, "quote": "..." }
+  ],
   "hygiene_de_vie": [{ "text": "une phrase", "quote": "extrait exact du transcript" }],
   "suivi": [{ "text": "une phrase", "quote": "extrait exact du transcript" }]
 }`;

@@ -69,7 +69,6 @@ grading is as follows:
 
 
  # Todo
- - linking quotes
  - fix main ui, bilan,  claude code ?
  - think about ajout / maintient / removal logic ? probably need 3 sections actually !!!
  - add a landing page with patient list ? -> would be good for a test suite

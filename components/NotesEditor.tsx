@@ -1,7 +1,7 @@
 "use client";
 
 // Tabs for the five note sections. Only this file knows the notes shape.
-// Complements use ComplementList (editable cousin of dossier RecsList).
+// Complements use ComplementList, grouped by Arrêt / Ajout / Maintien.
 
 import { useEffect, useLayoutEffect, useRef } from "react";
 import { ComplementList } from "@/components/ComplementList";
@@ -207,17 +207,18 @@ export function NotesEditor({
           <ComplementList
             items={notes.complements}
             transcript={transcript}
-            onPatch={(index, patch) =>
+            onPatch={(produit_id, patch) =>
               setComplements(
-                notes.complements.map((item, i) =>
-                  i === index ? { ...item, ...patch } : item,
+                notes.complements.map((item) =>
+                  item.produit_id === produit_id ? { ...item, ...patch } : item,
                 ),
               )
             }
-            onRemove={(index) =>
-              setComplements(notes.complements.filter((_, i) => i !== index))
+            onRemove={(produit_id) =>
+              setComplements(
+                notes.complements.filter((item) => item.produit_id !== produit_id),
+              )
             }
-            onReorder={setComplements}
             onAdd={(produit_id) =>
               setComplements([
                 ...notes.complements,
