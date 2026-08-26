@@ -1,4 +1,4 @@
-// Loads the mock JSON from /data and helpers to look up a product or same-ingredient alternatives.
+// Loads the mock JSON from /data and helpers to look up a product.
 
 import type { ConsultationNotes, Product } from "./types";
 import mockFile from "../data/notes.json";
@@ -20,32 +20,10 @@ export function productById(id: string): Product | undefined {
   return products.find((p) => p.id === id);
 }
 
-export function alternatives(id: string): Product[] {
-  const current = productById(id);
-  if (!current) return [];
-  return products.filter(
-    (p) => p.ingredient === current.ingredient && p.id !== current.id,
-  );
-}
-
 export function formatPrice(prix: number): string {
   return prix.toLocaleString("fr-BE", {
     style: "currency",
     currency: "EUR",
-  });
-}
-
-export function unusedIngredients(takenIds: string[]) {
-  const taken = new Set(
-    takenIds
-      .map((id) => productById(id)?.ingredient)
-      .filter((x): x is string => Boolean(x)),
-  );
-  const seen = new Set<string>();
-  return products.filter((p) => {
-    if (taken.has(p.ingredient) || seen.has(p.ingredient)) return false;
-    seen.add(p.ingredient);
-    return true;
   });
 }
 

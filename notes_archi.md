@@ -1,45 +1,43 @@
 
 # Requirements
-## input
-- free text transcript "transcript texte"
-- structured patient json
-- structured product json
-## output
-- structured notes.json ()
-    - linked to mini-catalogue products
-## UI
-- intuitive
-    - structured transcript and notes should appear on the same window so the doctor has context of his notes to verify structured output
 
-- integrated:
-     paste transcript → generate → edit → confirm (notes attached, no write-back to patient yet)
-     linked with products !
+General thoughts after reading the text. Main reuirements seems to be a focus on UX, user experience, following the caretaker journey, EXPLAINABILITY, fake data and maintainablility (which i would say means the code should be simple, not overengineered)
 
-## Code
-- maintainable
-    - simple componenents, top level comment explaining in plain language what it does
-- explainable
-    - one pass LLM calls with validation
+| | what |
+|---|---|
+| **input** | free text transcript · structured patient json · structured product json |
+| **output** | structured notes.json, linked to mini-catalogue products |
+| **not in this prototype** | patient info updated |
+
+## Principles
+The UI should be intuitive, it should put itself in the shoes of the caretaker who has to handle a million things at the same time. For example you don't want him juggling between screen to verify the data. So I would already decide to but the raw notes and extract data on the same screen. Maybe even with connectors.
+
+It should also be integrated. Transcript generation, editing, confirming all working together and linking to the simplycure products
+
+Code should be maintainable. Which in my view means brutally simple. Simple componenents. Top level comment explaining in plain language what it does on every important file.
 
 # Deliverable
-- running prototype
-- Loom 5–7 min (problem, product, tech, how I used IA, 2 weeks more)
+- running prototype 
+- Loom 5–7 min (problem, product, tech, how I used IA, 2 weeks more)  
+
+Extra:
 - public Vercel URL for the demo (données fictives banner)
 
 # Decisions
+- one pass LLM calls with validation (explainalbe and simple, no langchain)
 - review step (auto-dump will not fly with practicians)
-- backend in go, AWS, react for simplycure integration ? No: translate later with AI it's easy, ship a prototype quickly for feedback now
-- langchain ? No overkill, one llm call (more explainable and controllable)
+- Simple next backend so i can push the demo to Vercel. Translation to go and aws would be a few agent calls anyways and i need the backend code to integrate it correctly anyways.
+- patient info won't get modified by the notes to keep the demo fixed and avoid reset logic
 
 - Vercel Hobby: mock notes by default, live LLM only if API key is set (prototype always runs)
 - one patient, no auth, no multi-praticien
-## Schema
-**Notes** (this workflow): motif, anamnèse, hygiène, suivi = free text. Compléments = produit_id + action.
-**Dossier**: biomarqueurs come from lab API / PDF — read by the note-taker, never written by it.
-**Confirm (later)**: patch `recommandations_en_cours` (ajout/maintien/arret) + append/update `historique_consultations` (motif). Do not touch biomarqueurs. Hygiène/suivi still later.
-
+- Schema design is explained in notes_schemas.md
 - UI and agent reasoning in french for now - later switch to english
-- Do not update the patient profile on Confirm in this prototype. Notes stay a draft. 
+- Ajout/maintient logic is stupid an annoying for practitioner i think. Make it native in the ui but no explicit writing.
+
+
+# Question
+Edge case: LLM recommends something not in the catalog IDs you feed it. Worth a one-line fallback now (e.g., flag as "produit non trouvé"), not just "later" — it's cheap and shows you thought about the failure mode, which matters for the "explainable, not black box" requirement.
 
 # Later (2 weeks)
 
@@ -68,3 +66,9 @@ grading is as follows:
  product sense / UX (x3) · usage IA pertinent & maîtrisé (x2) · qualité & archi du code, validée par Nicolas (x2) · vélocité / capacité à trancher (x3).
 
  did we get this right ??
+
+
+ # Todo
+ - linking quotes
+ - fix main ui, bilan,  claude code ?
+ - ajout maintient logic

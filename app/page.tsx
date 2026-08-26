@@ -37,7 +37,13 @@ export default function HomePage() {
       if (!res.ok) {
         throw new Error(data.error || "Échec de la génération");
       }
-      setDraft(data as ConsultationNotes);
+      const { raw, ...notes } = data;
+      if (typeof raw === "string") {
+        console.log("[llm raw]\n" + raw);
+      } else {
+        console.log("[llm] mock notes (no raw model text)", notes);
+      }
+      setDraft(notes as ConsultationNotes);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Erreur inconnue");
     } finally {
@@ -46,33 +52,37 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen">
-      <div className="border-b border-line bg-warn-soft px-5 py-2 text-center text-xs text-warn">
+    <div className="flex h-dvh flex-col">
+      <div className="shrink-0 border-b border-line bg-warn-soft px-5 py-2 text-center text-xs text-warn">
         Prototype Simplycure · données 100 % fictives · ne pas utiliser de vraies données
         patient
       </div>
 
       {step === "dossier" ? (
-        <DossierView
-          attachedNotes={attached}
-          onStartNote={() => setStep("note")}
-        />
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          <DossierView
+            attachedNotes={attached}
+            onStartNote={() => setStep("note")}
+          />
+        </div>
       ) : (
-        <NoteTakerView
-          transcript={transcript}
-          onTranscriptChange={setTranscript}
-          notes={draft}
-          onNotesChange={setDraft}
-          onGenerate={generate}
-          onConfirm={() => {
-            if (!draft) return;
-            setAttached(draft);
-            setStep("dossier");
-          }}
-          onBack={() => setStep("dossier")}
-          loading={loading}
-          error={error}
-        />
+        <div className="min-h-0 flex-1 overflow-hidden">
+          <NoteTakerView
+            transcript={transcript}
+            onTranscriptChange={setTranscript}
+            notes={draft}
+            onNotesChange={setDraft}
+            onGenerate={generate}
+            onConfirm={() => {
+              if (!draft) return;
+              setAttached(draft);
+              setStep("dossier");
+            }}
+            onBack={() => setStep("dossier")}
+            loading={loading}
+            error={error}
+          />
+        </div>
       )}
     </div>
   );

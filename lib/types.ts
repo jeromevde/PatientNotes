@@ -1,4 +1,4 @@
-// Shapes of our four JSON documents: patient, products, notes, and a quoted text field.
+// Shapes of our four JSON documents: patient, products, notes, and a quoted claim.
 // This is the contract the UI and the API both follow.
 
 export type BiomarkerStatus = "bas" | "normal" | "haut";
@@ -46,7 +46,7 @@ export type PatientDossier = {
   }[];
 };
 
-export type QuotedText = {
+export type Claim = {
   text: string;
   quote: string | null;
 };
@@ -65,9 +65,9 @@ export type ConsultationNotes = {
   genere_le: string;
   source: "transcript";
   used_llm: boolean;
-  motif: QuotedText;
-  anamnese: QuotedText;
+  motif: Claim[];
+  anamnese: Claim[];
   complements: ComplementRec[];
-  hygiene_de_vie: QuotedText;
-  suivi: QuotedText;
+  hygiene_de_vie: Claim[];
+  suivi: Claim[];
 };

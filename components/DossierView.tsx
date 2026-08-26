@@ -70,10 +70,13 @@ export function DossierView({
                     <p className="text-xs font-medium uppercase tracking-[0.14em] text-accent">
                       Note structurée · non appliquée au profil
                     </p>
-                    <p className="mt-2 text-sm">{attachedNotes.motif.text}</p>
+                    <p className="mt-2 text-sm">
+                      {attachedNotes.motif.map((item) => item.text).join(" · ")}
+                    </p>
                     <p className="mt-2 text-xs text-muted">
                       {attachedNotes.complements.filter((x) => x.action === "ajout").length}{" "}
-                      complément(s) à ajouter · {attachedNotes.suivi.text}
+                      complément(s) à ajouter ·{" "}
+                      {attachedNotes.suivi.map((item) => item.text).join(" · ")}
                     </p>
                   </div>
                 ) : null}

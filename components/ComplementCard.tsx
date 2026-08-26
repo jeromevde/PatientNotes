@@ -1,7 +1,7 @@
 // Shared cream product card: lab mark, name, price. Recs and notes both sit in this
 // so a supplement looks like a supplement. Fields inside can differ.
 
-import type { ReactNode } from "react";
+import type { LiHTMLAttributes, ReactNode } from "react";
 import { LabMark } from "@/components/LabMark";
 import { formatPrice, productById } from "@/lib/data";
 import { formatDate } from "@/lib/format";
@@ -12,14 +12,21 @@ export const fieldBox =
 export function ComplementCard({
   produitId,
   depuis,
+  leading,
   trailing,
   children,
+  className,
+  active = false,
+  ...liProps
 }: {
   produitId: string;
   depuis?: string | null;
+  leading?: ReactNode;
   trailing?: ReactNode;
   children?: ReactNode;
-}) {
+  className?: string;
+  active?: boolean;
+} & Omit<LiHTMLAttributes<HTMLLIElement>, "children">) {
   const product = productById(produitId);
   const meta = [
     product ? formatPrice(product.prix) : "Hors catalogue",
@@ -29,12 +36,25 @@ export function ComplementCard({
     .join(" · ");
 
   return (
-    <li className="rounded-xl border border-line bg-card p-4">
+    <li
+      {...liProps}
+      data-produit-id={produitId}
+      className={`rounded-xl border border-line bg-card p-4 ${className ?? ""}`}
+    >
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="flex items-center gap-3">
+          {leading}
           {product ? <LabMark lab={product.labo} /> : null}
           <div>
-            <p className="text-sm font-medium">{product?.nom ?? produitId}</p>
+            <p
+              className={
+                active
+                  ? "rounded-sm bg-mark-on px-0.5 text-sm font-medium text-card"
+                  : "text-sm font-medium"
+              }
+            >
+              {product?.nom ?? produitId}
+            </p>
             <p className="text-xs text-muted">{meta}</p>
           </div>
         </div>

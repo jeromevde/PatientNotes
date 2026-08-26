@@ -4,14 +4,50 @@
   "genere_le": "2026-04-03",
   "source": "transcript",
   "used_llm": false,
-  "motif": {
-    "text": "Suivi fatigue chronique, réveils nocturnes (~4h), fatigue de fin de journée, ongles cassants + chute de cheveux.",
-    "quote": "je me réveille encore souvent vers 4h du matin, et j'ai du mal à me rendormir"
-  },
-  "anamnese": {
-    "text": "Discussion du bilan de mars (déjà au dossier) : ferritine et vitamine D basses, TSH normale. Alimentation flexitarienne (peu de fer héminique). Stress professionnel élevé. Café ~4/j dont après 15h. Ballonnements en soirée.",
-    "quote": "La ferritine était basse je crois, et la vitamine D aussi."
-  },
+  "motif": [
+    {
+      "text": "Suivi fatigue et sommeil depuis janvier.",
+      "quote": "On s'était vus en janvier pour la fatigue et le sommeil"
+    },
+    {
+      "text": "Réveils nocturnes vers 4h, difficulté à se rendormir.",
+      "quote": "je me réveille encore souvent vers 4h du matin, et j'ai du mal à me rendormir"
+    },
+    {
+      "text": "Fatigue en fin d'après-midi (coup de barre vers 16h).",
+      "quote": "J'ai un gros coup de barre vers 16h"
+    },
+    {
+      "text": "Ongles cassants et chute de cheveux.",
+      "quote": "j'ai les ongles cassants et je perds un peu mes cheveux"
+    }
+  ],
+  "anamnese": [
+    {
+      "text": "Ferritine et vitamine D basses (bilan de mars, déjà au dossier).",
+      "quote": "La ferritine était basse je crois, et la vitamine D aussi."
+    },
+    {
+      "text": "TSH normale.",
+      "quote": "La TSH est normale"
+    },
+    {
+      "text": "Alimentation flexitarienne, peu de viande rouge.",
+      "quote": "Peu de viande rouge, je suis plutôt flexitarienne"
+    },
+    {
+      "text": "Stress professionnel élevé.",
+      "quote": "Beaucoup de stress en ce moment, gros projet au boulot"
+    },
+    {
+      "text": "Café ~4/j, souvent après 15h.",
+      "quote": "Je bois pas mal de café, genre 4 tasses par jour, et souvent une après 15h"
+    },
+    {
+      "text": "Ballonnements en soirée.",
+      "quote": "Un peu de ballonnements le soir, oui"
+    }
+  ],
   "complements": [
     {
       "produit_id": "prd_mag",
@@ -56,12 +92,24 @@
       "quote": "on teste un mois de probiotiques pour les ballonnements"
     }
   ],
-  "hygiene_de_vie": {
-    "text": "Stop café après 14h ; marche 20 min en fin de journée.",
-    "quote": "café stop après 14h, et si possible 20 minutes de marche en fin de journée"
-  },
-  "suivi": {
-    "text": "Re-bilan ferritine + vitamine D à 3 mois ; RDV de contrôle.",
-    "quote": "On refait un bilan ferritine et vitamine D dans 3 mois"
-  }
+  "hygiene_de_vie": [
+    {
+      "text": "Stop café après 14h.",
+      "quote": "café stop après 14h"
+    },
+    {
+      "text": "Marche 20 min en fin de journée.",
+      "quote": "20 minutes de marche en fin de journée"
+    }
+  ],
+  "suivi": [
+    {
+      "text": "Re-bilan ferritine et vitamine D à 3 mois.",
+      "quote": "On refait un bilan ferritine et vitamine D dans 3 mois"
+    },
+    {
+      "text": "RDV de contrôle au même moment.",
+      "quote": "on se revoit à ce moment-là"
+    }
+  ]
 }

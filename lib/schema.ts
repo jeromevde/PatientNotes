@@ -2,12 +2,14 @@
 
 import { z } from "zod";
 
-const quotedText = z.object({
-  text: z.string(),
+const claim = z.object({
+  text: z.string().describe("One atomic clinical fact, one sentence"),
   quote: z
     .string()
     .nullable()
-    .describe("Exact short excerpt from the transcript, or null if none"),
+    .describe(
+      "Verbatim substring of the transcript that supports this fact, or null",
+    ),
 });
 
 export const consultationNotesSchema = z.object({
@@ -15,9 +17,9 @@ export const consultationNotesSchema = z.object({
   patient_id: z.string(),
   genere_le: z.string(),
   source: z.literal("transcript"),
-  motif: quotedText,
-  anamnese: quotedText.describe(
-    "Free-text history. May mention labs already on the dossier; do not invent lab values.",
+  motif: z.array(claim),
+  anamnese: z.array(claim).describe(
+    "Atomic facts. May mention labs already on the dossier; do not invent lab values.",
   ),
   complements: z.array(
     z.object({
@@ -27,11 +29,14 @@ export const consultationNotesSchema = z.object({
       action: z.enum(["maintien", "ajout", "arret"]),
       posologie: z.string().nullable(),
       duree: z.string().nullable(),
-      quote: z.string().nullable(),
+      quote: z
+        .string()
+        .nullable()
+        .describe("Verbatim substring of the transcript, or null"),
     }),
   ),
-  hygiene_de_vie: quotedText,
-  suivi: quotedText,
+  hygiene_de_vie: z.array(claim),
+  suivi: z.array(claim),
 });
 
 export type LlmNotes = z.infer<typeof consultationNotesSchema>;

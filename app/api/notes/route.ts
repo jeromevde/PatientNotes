@@ -7,6 +7,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { consultationNotesSchema } from "@/lib/schema";
 import { mockNotes, products } from "@/lib/data";
+import { keepVerbatimQuotes } from "@/lib/quotes";
 import type { ConsultationNotes, PatientDossier } from "@/lib/types";
 
 const requestSchema = z.object({
@@ -31,9 +32,8 @@ Tu transcris une consultation en notes structurées. Tu n'inventes rien.
 
 Règles:
 - Langue: français.
-- Chaque champ important a un "quote": extrait COURT et EXACT du transcript, ou null.
+- Motif, anamnèse, hygiène de vie et suivi : tableau de faits atomiques. Chaque item = une phrase clinique ("text") + un "quote" recopié TEL QUEL depuis le transcript (sous-chaîne exacte), ou null. Un fait = une phrase. Pas de paragraphe unique.
 - Ne cite que des faits présents dans le transcript ou le dossier patient fourni.
-- Les sections motif, anamnèse, hygiène de vie et suivi sont du texte libre. Adapte le contenu à CE qui a été dit — n'invente pas de sous-rubriques.
 - Les biomarqueurs du dossier sont déjà saisis par un autre flux (labo / PDF). Ne les recopie pas dans un tableau. Tu peux les mentionner dans l'anamnèse s'ils ont été discutés.
 - Les compléments: produit_id DOIT être un id du catalogue. Plusieurs SKUs peuvent partager le même ingredient (labs différents) — choisis un id, le praticien pourra en changer. Pour un maintien, garde l'id déjà en cours dans le dossier.
 - action: "maintien" si déjà en cours et on continue, "ajout" si nouveau, "arret" si on arrête.
@@ -65,11 +65,11 @@ Forme JSON attendue:
   "patient_id": "...",
   "genere_le": "YYYY-MM-DD",
   "source": "transcript",
-  "motif": { "text": "...", "quote": "..." },
-  "anamnese": { "text": "...", "quote": "..." },
+  "motif": [{ "text": "une phrase", "quote": "extrait exact du transcript" }],
+  "anamnese": [{ "text": "une phrase", "quote": "extrait exact du transcript" }],
   "complements": [{ "produit_id": "prd_...", "action": "maintien|ajout|arret", "posologie": "...", "duree": null, "quote": "..." }],
-  "hygiene_de_vie": { "text": "...", "quote": "..." },
-  "suivi": { "text": "...", "quote": "..." }
+  "hygiene_de_vie": [{ "text": "une phrase", "quote": "extrait exact du transcript" }],
+  "suivi": [{ "text": "une phrase", "quote": "extrait exact du transcript" }]
 }`;
 }
 
@@ -111,8 +111,12 @@ export async function POST(req: Request) {
   const apiKey = process.env.OPENROUTER_API_KEY;
 
   if (!apiKey) {
+    console.log("[llm] no API key — returning mock notes");
     return NextResponse.json(
-      attachMeta(mockNotes, false, consultation_id, patient_id),
+      keepVerbatimQuotes(
+        transcript,
+        attachMeta(mockNotes, false, consultation_id, patient_id),
+      ),
     );
   }
 
@@ -150,11 +154,16 @@ export async function POST(req: Request) {
     if (!content) {
       throw new Error("Empty model response");
     }
+    console.log("[llm raw]\n" + content);
     const notes = parseNotesJson(content);
 
-    return NextResponse.json(
-      attachMeta(notes, true, consultation_id, patient_id),
-    );
+    return NextResponse.json({
+      ...keepVerbatimQuotes(
+        transcript,
+        attachMeta(notes, true, consultation_id, patient_id),
+      ),
+      raw: content,
+    });
   } catch (err) {
     console.error(err);
     return NextResponse.json(
