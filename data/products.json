@@ -1,0 +1,74 @@
+[
+  {
+    "id": "prd_mag",
+    "nom": "Magnésium bisglycinate",
+    "labo": "NutriLab",
+    "categorie": "Minéraux",
+    "ingredient": "magnesium",
+    "prix": 24.9
+  },
+  {
+    "id": "prd_mag_2",
+    "nom": "Magnésium bisglycinate",
+    "labo": "GlyciMax",
+    "categorie": "Minéraux",
+    "ingredient": "magnesium",
+    "prix": 21.5
+  },
+  {
+    "id": "prd_omega3",
+    "nom": "Oméga-3 EPA/DHA",
+    "labo": "MarinePure",
+    "categorie": "Acides gras",
+    "ingredient": "omega3",
+    "prix": 32.0
+  },
+  {
+    "id": "prd_omega3_2",
+    "nom": "Oméga-3 EPA/DHA",
+    "labo": "NordicSea",
+    "categorie": "Acides gras",
+    "ingredient": "omega3",
+    "prix": 34.5
+  },
+  {
+    "id": "prd_vitd",
+    "nom": "Vitamine D3 2000 UI",
+    "labo": "NutriLab",
+    "categorie": "Vitamines",
+    "ingredient": "vitamine_d",
+    "prix": 15.5
+  },
+  {
+    "id": "prd_vitd_2",
+    "nom": "Vitamine D3 2000 UI",
+    "labo": "D-Sol",
+    "categorie": "Vitamines",
+    "ingredient": "vitamine_d",
+    "prix": 13.9
+  },
+  {
+    "id": "prd_fer",
+    "nom": "Fer bisglycinate + Vitamine C",
+    "labo": "FerroVie",
+    "categorie": "Minéraux",
+    "ingredient": "fer",
+    "prix": 19.9
+  },
+  {
+    "id": "prd_probio",
+    "nom": "Probiotiques 10 souches",
+    "labo": "BioFlore",
+    "categorie": "Microbiote",
+    "ingredient": "probiotiques",
+    "prix": 29.0
+  },
+  {
+    "id": "prd_ashwa",
+    "nom": "Ashwagandha KSM-66",
+    "labo": "AdaptoNat",
+    "categorie": "Plantes",
+    "ingredient": "ashwagandha",
+    "prix": 22.5
+  }
+]

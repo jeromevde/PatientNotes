@@ -1,0 +1,55 @@
+/* Colors, fonts, and base page look. Components use these names (paper, ink, accent, …). */
+
+@import "tailwindcss";
+
+:root {
+  --paper: #f4f1ea;
+  --ink: #1c2418;
+  --muted: #5c6756;
+  --line: #ddd6c8;
+  --card: #fffcf7;
+  --accent: #215c3a;
+  --accent-soft: #dceadf;
+  --warn: #8a4b12;
+  --warn-soft: #f3e4d1;
+  --ok: #215c3a;
+  --ok-soft: #dceadf;
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-card: var(--card);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  font-family: var(--font-sans), system-ui, sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.font-serif {
+  font-family: var(--font-serif), ui-serif, Georgia, serif;
+}
+
+button,
+textarea,
+input {
+  font-family: inherit;
+}

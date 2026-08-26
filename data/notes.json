@@ -1,0 +1,67 @@
+{
+  "consultation_id": "cons_1174",
+  "patient_id": "pat_00427",
+  "genere_le": "2026-04-03",
+  "source": "transcript",
+  "used_llm": false,
+  "motif": {
+    "text": "Suivi fatigue chronique, réveils nocturnes (~4h), fatigue de fin de journée, ongles cassants + chute de cheveux.",
+    "quote": "je me réveille encore souvent vers 4h du matin, et j'ai du mal à me rendormir"
+  },
+  "anamnese": {
+    "text": "Discussion du bilan de mars (déjà au dossier) : ferritine et vitamine D basses, TSH normale. Alimentation flexitarienne (peu de fer héminique). Stress professionnel élevé. Café ~4/j dont après 15h. Ballonnements en soirée.",
+    "quote": "La ferritine était basse je crois, et la vitamine D aussi."
+  },
+  "complements": [
+    {
+      "produit_id": "prd_mag",
+      "action": "maintien",
+      "posologie": "1 gélule matin + soir",
+      "duree": null,
+      "quote": "On continue le magnésium bisglycinate matin et soir"
+    },
+    {
+      "produit_id": "prd_omega3",
+      "action": "maintien",
+      "posologie": "2 gélules/jour au repas",
+      "duree": null,
+      "quote": "On garde les oméga-3"
+    },
+    {
+      "produit_id": "prd_fer",
+      "action": "ajout",
+      "posologie": "1 gélule le matin à jeun",
+      "duree": null,
+      "quote": "On ajoute du fer bisglycinate avec de la vitamine C"
+    },
+    {
+      "produit_id": "prd_vitd",
+      "action": "ajout",
+      "posologie": "2000 UI / jour",
+      "duree": null,
+      "quote": "on démarre la vitamine D3, 2000 UI par jour"
+    },
+    {
+      "produit_id": "prd_ashwa",
+      "action": "ajout",
+      "posologie": "le soir",
+      "duree": "1 mois",
+      "quote": "de l'ashwagandha le soir pendant un mois"
+    },
+    {
+      "produit_id": "prd_probio",
+      "action": "ajout",
+      "posologie": null,
+      "duree": "1 mois",
+      "quote": "on teste un mois de probiotiques pour les ballonnements"
+    }
+  ],
+  "hygiene_de_vie": {
+    "text": "Stop café après 14h ; marche 20 min en fin de journée.",
+    "quote": "café stop après 14h, et si possible 20 minutes de marche en fin de journée"
+  },
+  "suivi": {
+    "text": "Re-bilan ferritine + vitamine D à 3 mois ; RDV de contrôle.",
+    "quote": "On refait un bilan ferritine et vitamine D dans 3 mois"
+  }
+}

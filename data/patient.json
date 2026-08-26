@@ -1,0 +1,65 @@
+{
+  "patient": {
+    "id": "pat_00427",
+    "prenom": "Camille",
+    "nom": "Verdonck",
+    "date_naissance": "1989-03-14",
+    "sexe": "F",
+    "email": "camille.verdonck@example.com",
+    "praticien_id": "prat_017",
+    "cree_le": "2025-11-08"
+  },
+  "historique_consultations": [
+    {
+      "id": "cons_1101",
+      "date": "2026-01-12",
+      "motif": "Fatigue chronique + troubles du sommeil"
+    },
+    {
+      "id": "cons_1174",
+      "date": "2026-04-03",
+      "motif": "Suivi : sommeil, digestion, stress"
+    }
+  ],
+  "recommandations_en_cours": [
+    {
+      "produit_id": "prd_mag",
+      "posologie": "1 gélule matin + soir",
+      "depuis": "2026-01-12"
+    },
+    {
+      "produit_id": "prd_omega3",
+      "posologie": "2 gélules/jour au repas",
+      "depuis": "2026-01-12"
+    }
+  ],
+  "biomarqueurs_recents": [
+    {
+      "nom": "Ferritine",
+      "valeur": 18,
+      "unite": "µg/L",
+      "ref": "20-200",
+      "date": "2026-03-20",
+      "statut": "bas",
+      "source": "laboratoire"
+    },
+    {
+      "nom": "Vitamine D (25-OH)",
+      "valeur": 21,
+      "unite": "ng/mL",
+      "ref": "30-60",
+      "date": "2026-03-20",
+      "statut": "bas",
+      "source": "laboratoire"
+    },
+    {
+      "nom": "TSH",
+      "valeur": 2.1,
+      "unite": "mUI/L",
+      "ref": "0.4-4.0",
+      "date": "2026-03-20",
+      "statut": "normal",
+      "source": "laboratoire"
+    }
+  ]
+}
