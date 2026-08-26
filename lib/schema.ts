@@ -19,7 +19,7 @@ export const consultationNotesSchema = z.object({
   source: z.literal("transcript"),
   motif: z.array(claim),
   anamnese: z.array(claim).describe(
-    "Atomic facts. May mention labs already on the dossier; do not invent lab values.",
+    "Atomic facts from the transcript. Mention labs only if they were spoken; do not invent values.",
   ),
   complements: z.array(
     z.object({

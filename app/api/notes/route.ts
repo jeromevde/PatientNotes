@@ -1,14 +1,20 @@
 // POST /api/notes — the only backend.
-// Takes a free-text transcript + patient + catalog, asks the LLM for structured notes,
-// checks product ids against the catalog. No API key → returns the mock notes instead.
+// Takes a transcript + current recs + catalog. The model never sees the rest of the dossier
+// (history, identity, labs) so it cannot quote those as if they were spoken.
 
 import OpenAI from "openai";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { consultationNotesSchema } from "@/lib/schema";
-import { mockNotes, products } from "@/lib/data";
+import { mockNotes, productById, products } from "@/lib/data";
 import { keepVerbatimQuotes } from "@/lib/quotes";
-import type { ConsultationNotes, PatientDossier } from "@/lib/types";
+import type { ConsultationNotes } from "@/lib/types";
+
+const recSchema = z.object({
+  produit_id: z.string(),
+  posologie: z.string(),
+  depuis: z.string(),
+});
 
 const requestSchema = z.object({
   transcript: z.string().min(20),
@@ -16,6 +22,15 @@ const requestSchema = z.object({
   consultation_id: z.string(),
   patient_id: z.string(),
 });
+
+type CurrentRec = z.infer<typeof recSchema>;
+
+function recsFromPatient(patient: unknown): CurrentRec[] {
+  const parsed = z
+    .object({ recommandations_en_cours: z.array(recSchema) })
+    .safeParse(patient);
+  return parsed.success ? parsed.data.recommandations_en_cours : [];
+}
 
 function catalogBlock(): string {
   return products
@@ -26,6 +41,16 @@ function catalogBlock(): string {
     .join("\n");
 }
 
+function recsBlock(recs: CurrentRec[]): string {
+  if (recs.length === 0) return "(aucun complément en cours)";
+  return recs
+    .map((r) => {
+      const name = productById(r.produit_id)?.nom ?? r.produit_id;
+      return `- ${r.produit_id}: ${name} · ${r.posologie} · depuis ${r.depuis}`;
+    })
+    .join("\n");
+}
+
 function systemPrompt(): string {
   return `Tu es un assistant de notes cliniques pour des praticiens Simplycure (naturopathie / micronutrition).
 Tu transcris une consultation en notes structurées. Tu n'inventes rien.
@@ -33,9 +58,10 @@ Tu transcris une consultation en notes structurées. Tu n'inventes rien.
 Règles:
 - Langue: français.
 - Motif, anamnèse, hygiène de vie et suivi : tableau de faits atomiques. Chaque item = une phrase clinique ("text") + un "quote" recopié TEL QUEL depuis le transcript (sous-chaîne exacte), ou null. Un fait = une phrase. Pas de paragraphe unique.
-- Ne cite que des faits présents dans le transcript ou le dossier patient fourni.
-- Les biomarqueurs du dossier sont déjà saisis par un autre flux (labo / PDF). Ne les recopie pas dans un tableau. Tu peux les mentionner dans l'anamnèse s'ils ont été discutés.
-- Les compléments: produit_id DOIT être un id du catalogue. Plusieurs SKUs peuvent partager le même ingredient (labs différents) — choisis un id, le praticien pourra en changer. Pour un maintien, garde l'id déjà en cours dans le dossier.
+- Les faits et les quotes viennent UNIQUEMENT du transcript. Jamais de l'historique, des labs, ni d'un autre champ dossier. Pas d'extrait exact → quote = null.
+- Ne pas inventer de valeurs de laboratoire. Mentionne un bilan seulement s'il est dit dans le transcript.
+- Les compléments: produit_id DOIT être un id du catalogue. Plusieurs SKUs peuvent partager le même ingredient (labs différents) — choisis un id, le praticien pourra en changer. Pour un maintien, garde l'id déjà en cours.
+- La liste "déjà en cours" sert UNIQUEMENT à choisir action (maintien / ajout / arrêt). Ce n'est pas une source de faits ni de quotes.
 - action: "maintien" si déjà en cours et on continue, "ajout" si nouveau, "arret" si on arrête.
 - Réponds UNIQUEMENT avec un objet JSON valide. Pas de markdown, pas de backticks.
 
@@ -45,18 +71,18 @@ ${catalogBlock()}`;
 
 function userPrompt(input: {
   transcript: string;
-  patient: unknown;
+  recs: CurrentRec[];
   consultation_id: string;
   patient_id: string;
 }): string {
-  return `Dossier patient (JSON):
-${JSON.stringify(input.patient, null, 2)}
+  return `Compléments déjà en cours (pour action seulement, jamais comme quote):
+${recsBlock(input.recs)}
 
 Consultation id: ${input.consultation_id}
 Patient id: ${input.patient_id}
 Date du jour (génère_le): ${new Date().toISOString().slice(0, 10)}
 
-Transcript (texte libre):
+Transcript (seule source des faits et des quotes):
 ${input.transcript}
 
 Forme JSON attendue:
@@ -108,6 +134,7 @@ export async function POST(req: Request) {
   }
 
   const { transcript, patient, consultation_id, patient_id } = parsed.data;
+  const recs = recsFromPatient(patient);
   const apiKey = process.env.OPENROUTER_API_KEY;
 
   if (!apiKey) {
@@ -141,7 +168,7 @@ export async function POST(req: Request) {
           role: "user",
           content: userPrompt({
             transcript,
-            patient: patient as PatientDossier,
+            recs,
             consultation_id,
             patient_id,
           }),
