@@ -63,7 +63,8 @@ const fr = (n: number) => String(n).replace(".", ",");
 
 type TimelineEntry =
   | { kind: "consultation"; id: string; date: string; motif: string }
-  | { kind: "biologie"; date: string; items: PatientDossier["biomarqueurs_recents"] };
+  | { kind: "biologie"; date: string; items: PatientDossier["biomarqueurs_recents"] }
+  | { kind: "ouverture"; date: string };
 
 export function DossierView({
   attachedNotes,
@@ -85,6 +86,7 @@ export function DossierView({
       (c): TimelineEntry => ({ kind: "consultation", id: c.id, date: c.date, motif: c.motif }),
     ),
     ...[...bioByDate.entries()].map(([date, items]): TimelineEntry => ({ kind: "biologie", date, items })),
+    { kind: "ouverture" as const, date: patient.cree_le },
   ].sort((a, b) => b.date.localeCompare(a.date));
 
   const planItems = recommandations_en_cours
@@ -325,9 +327,11 @@ export function DossierView({
               {timeline.map((entry, i) => {
                 const isLast = i === timeline.length - 1;
                 const isLatestConsultation = entry.kind === "consultation" && entry.id === latest.id;
-                const accent = entry.kind === "biologie" ? "#B9752B" : isLatestConsultation ? "#2E6B4F" : "#C4BCAA";
-                const typeLabel = entry.kind === "biologie" ? "Biologie" : "Consultation";
-                const key = entry.kind === "biologie" ? `bio-${entry.date}` : entry.id;
+                const isConfirmed = isLatestConsultation && Boolean(attachedNotes);
+                const accent = entry.kind === "biologie" ? "#B9752B" : isConfirmed ? "#2E6B4F" : "#C4BCAA";
+                const typeLabel =
+                  entry.kind === "biologie" ? "Biologie" : entry.kind === "ouverture" ? "Ouverture du dossier" : "Consultation";
+                const key = entry.kind === "biologie" ? `bio-${entry.date}` : entry.kind === "ouverture" ? "ouverture" : entry.id;
                 return (
                   <div
                     key={key}
@@ -343,7 +347,7 @@ export function DossierView({
                           width: 10,
                           height: 10,
                           borderRadius: "50%",
-                          background: entry.kind === "biologie" || !(isLatestConsultation && attachedNotes) ? accent : "#FFFDF9",
+                          background: accent,
                           border: `2px solid ${accent}`,
                           flex: "none",
                           boxSizing: "border-box",
@@ -357,37 +361,36 @@ export function DossierView({
                       </div>
 
                       {entry.kind === "biologie" ? (
-                        <div className="flex flex-wrap gap-x-3 gap-y-1" style={{ fontSize: 13.5, lineHeight: 1.5 }}>
-                          {entry.items.map((b) => (
-                            <span
-                              key={b.nom}
-                              style={{
-                                fontWeight: b.statut === "normal" ? 400 : 600,
-                                color: b.statut === "normal" ? "#3A342A" : "#8A5320",
-                              }}
-                            >
-                              {b.nom} {fr(b.valeur)} {b.unite}
-                            </span>
-                          ))}
-                        </div>
-                      ) : (
-                        <div>
-                          <span style={{ fontSize: 12.5, color: "#9A9285" }}>Motif : </span>
-                          <span style={{ fontSize: 14, fontWeight: 500, lineHeight: 1.4 }}>{entry.motif}</span>
-                        </div>
-                      )}
+                        (() => {
+                          const abnormal = entry.items.filter((b) => b.statut !== "normal");
+                          const shown = abnormal.length > 0 ? abnormal : entry.items;
+                          const restCount = entry.items.length - shown.length;
+                          return (
+                            <>
+                              <div style={{ fontSize: 12.5, color: "#6E6759", lineHeight: 1.5 }}>
+                                {shown.map((b) => `${b.nom} ${fr(b.valeur)} ${b.unite}`).join(" · ")}
+                              </div>
+                              {restCount > 0 ? (
+                                <div style={{ fontSize: 12.5, color: "#8A8377", lineHeight: 1.5, marginTop: 2 }}>
+                                  + {restCount} autre{restCount > 1 ? "s" : ""} valeur{restCount > 1 ? "s" : ""} dans les normes
+                                </div>
+                              ) : null}
+                            </>
+                          );
+                        })()
+                      ) : entry.kind === "consultation" ? (
+                        <div style={{ fontSize: 12.5, color: "#6E6759", lineHeight: 1.5 }}>{entry.motif}</div>
+                      ) : null}
 
-                      {isLatestConsultation && attachedNotes ? (
+                      {isConfirmed && attachedNotes ? (
                         <div className="mt-3 rounded-xl p-4" style={{ background: "#F0F4EF" }}>
                           <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#2E6B4F" }}>
                             Note structurée · non appliquée au profil
                           </p>
                           <p className="mt-2" style={{ fontSize: 13 }}>
-                            <span style={{ color: "#6E6759" }}>Motif : </span>
                             {attachedNotes.motif.map((item) => item.text).join(" · ")}
                           </p>
                           <p className="mt-2" style={{ fontSize: 12, color: "#6E6759" }}>
-                            <span>Suivi : </span>
                             {attachedNotes.complements.filter((x) => x.action === "ajout").length} complément(s) à
                             ajouter · {attachedNotes.suivi.map((item) => item.text).join(" · ")}
                           </p>
