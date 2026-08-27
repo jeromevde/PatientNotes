@@ -72,9 +72,10 @@ grading is as follows:
 
 
  # Todo
- - fix main ui, bilan,  claude code ?
- - add a landing page with patient list ? -> would be good for a test suite
+- - add a landing page with patient list ? -> would be good for a test suite
 
  # Gaps
  - Unknown catalog ids are silently dropped. 
  - stress test with adverserial transcripts
+
+ - Clearly passing the full catalog on every request to the LLM is a dumb idea and only for this demo. In practice I expected Simplycure catalog to be quite large and not necessarily (or be costly to do so) fit in an llm context window. I'd design a quick intermediate step with an Openai's embedding model text-embedding-3-small to query a predefined list of 10 close matches to the extracted text and then a second call to decide which one of those. In practice this happens in the background when the user has not even opened the supplement tab so he wouldn't even notice the delay.

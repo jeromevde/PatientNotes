@@ -5,11 +5,11 @@
 // Header + empty state use their own fonts/colors (matching the dossier redesign) so they
 // don't touch the rest of the app's look. Editing logic, quotes, and the /api/notes call are untouched.
 
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 import { Newsreader, Instrument_Sans } from "next/font/google";
 import { NotesEditor, noteTabs } from "@/components/NotesEditor";
 import { TranscriptView } from "@/components/TranscriptView";
-import { patientDossier, products, sampleTranscript } from "@/lib/data";
+import { patientDossier, sampleTranscript } from "@/lib/data";
 import { formatDate } from "@/lib/format";
 import { quotesForTab, type NoteTab } from "@/lib/quotes";
 import type { ConsultationNotes } from "@/lib/types";
@@ -28,6 +28,20 @@ const sans = Instrument_Sans({
 const serifFont = { fontFamily: "var(--font-notetaker-serif), Georgia, serif" };
 const sansFont = { fontFamily: "var(--font-notetaker-sans), Helvetica, Arial, sans-serif" };
 
+export type ExtractionStatus = { kind: "ok" | "warning" | "error"; message: string };
+
+const STATUS_STYLE: Record<ExtractionStatus["kind"], CSSProperties> = {
+  ok: { background: "#E4EBE3", color: "#2E5A3E", borderColor: "#D6E1D7" },
+  warning: { background: "#FCF3E7", color: "#8A5320", borderColor: "#F0DFC4" },
+  error: { background: "#F9E4E1", color: "#A23B2E", borderColor: "#F0CFC8" },
+};
+
+const STATUS_ICON: Record<ExtractionStatus["kind"], string> = {
+  ok: "✓",
+  warning: "⚠",
+  error: "✕",
+};
+
 function ExtractionWait() {
   return (
     <div className="flex min-h-0 flex-1 flex-col" aria-busy="true" aria-live="polite">
@@ -43,7 +57,7 @@ function ExtractionWait() {
           </span>
         ))}
       </div>
-      <p className="mt-4 text-sm text-muted">Génération en cours…</p>
+      <p className="mt-4 text-sm text-muted">Génération en cours (environ 10s)…</p>
       <div className="mt-4 space-y-3">
         <div className="h-4 w-11/12 animate-pulse rounded bg-line" />
         <div className="h-4 w-4/5 animate-pulse rounded bg-line" />
@@ -61,47 +75,16 @@ function GeneratePrompt({
   onGenerate: () => void;
   disabled: boolean;
 }) {
-  const { recommandations_en_cours, biomarqueurs_recents } = patientDossier;
-  const latestBioDate = biomarqueurs_recents.reduce(
-    (max, b) => (b.date > max ? b.date : max),
-    biomarqueurs_recents[0]?.date ?? "",
-  );
-  const abnormalCount = biomarqueurs_recents.filter((b) => b.statut !== "normal").length;
-
-  const context = [
-    recommandations_en_cours.length > 0
-      ? `Plan en cours chargé · ${recommandations_en_cours.length} produit(s)`
-      : null,
-    biomarqueurs_recents.length > 0
-      ? `Bilan du ${formatDate(latestBioDate)} chargé · ${abnormalCount} valeur(s) à surveiller sur ${biomarqueurs_recents.length}`
-      : null,
-    `Catalogue produits · ${products.length} références disponibles`,
-    "Sortie relue par le praticien avant tout ajout au dossier",
-  ].filter((x): x is string => Boolean(x));
-
   return (
     <div
       className={`${serif.variable} ${sans.variable} rounded-2xl p-6`}
       style={{ ...sansFont, background: "#FFFDF9", border: "1px solid #E6DFD1" }}
     >
       <div style={{ ...serifFont, fontSize: 20, marginBottom: 8 }}>Générer la note structurée</div>
-      <p style={{ fontSize: 13.5, color: "#6E6759", lineHeight: 1.6, marginBottom: 18 }}>
-        Le transcript est analysé avec le contexte du dossier : plan en cours, biomarqueurs, catalogue
-        produits. Chaque élément extrait reste rattaché à sa citation source et rien n&rsquo;entre au
-        dossier sans validation du praticien.
+      <p style={{ fontSize: 13.5, color: "#6E6759", lineHeight: 1.6, marginBottom: 20 }}>
+        Le transcript est analysé avec le plan en cours et le catalogue produits. Chaque élément extrait
+        reste rattaché à sa citation source et rien n&rsquo;entre au dossier sans validation du praticien.
       </p>
-      <div className="flex flex-col gap-2" style={{ marginBottom: 20 }}>
-        {context.map((line) => (
-          <div
-            key={line}
-            className="flex items-center gap-2.5 rounded-lg px-3.5"
-            style={{ fontSize: 13, color: "#3A342A", background: "#FBF8F1", border: "1px solid #EFEADE", padding: "10px 14px" }}
-          >
-            <span style={{ color: "#2E6B4F", fontWeight: 600 }}>✓</span>
-            <span>{line}</span>
-          </div>
-        ))}
-      </div>
       <button
         type="button"
         onClick={onGenerate}
@@ -129,7 +112,7 @@ export function NoteTakerView({
   onConfirm,
   onBack,
   loading,
-  error,
+  status,
 }: {
   transcript: string;
   onTranscriptChange: (value: string) => void;
@@ -139,7 +122,7 @@ export function NoteTakerView({
   onConfirm: () => void;
   onBack: () => void;
   loading: boolean;
-  error: string | null;
+  status: ExtractionStatus | null;
 }) {
   const [tab, setTab] = useState<NoteTab>("motif");
   const [focusQuote, setFocusQuote] = useState<string | null>(null);
@@ -198,8 +181,14 @@ export function NoteTakerView({
         </div>
       </header>
 
-      {error ? (
-        <p className="shrink-0 border-b border-line bg-warn-soft px-5 py-2 text-sm text-warn">{error}</p>
+      {status ? (
+        <div
+          className="flex shrink-0 items-center gap-2 border-b px-5 py-2.5 text-sm"
+          style={STATUS_STYLE[status.kind]}
+        >
+          <span style={{ fontWeight: 600 }}>{STATUS_ICON[status.kind]}</span>
+          <span>{status.message}</span>
+        </div>
       ) : null}
 
       <div className="grid min-h-0 flex-1 grid-rows-2 lg:grid-cols-2 lg:grid-rows-1">

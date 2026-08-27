@@ -3,13 +3,43 @@
 // The only page. Switches between the patient dossier and the note-taker.
 // Holds transcript + draft notes in memory. Confirm attaches the note; it does not write the patient file.
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { DossierView } from "@/components/DossierView";
-import { NoteTakerView } from "@/components/NoteTakerView";
+import { NoteTakerView, type ExtractionStatus } from "@/components/NoteTakerView";
 import { patientDossier, sampleTranscript } from "@/lib/data";
 import type { ConsultationNotes } from "@/lib/types";
 
 type Step = "dossier" | "note";
+type Simulate = "invalid_json" | "wrong_id";
+
+declare global {
+  interface Window {
+    simulate_wrong_json?: () => void;
+    simulate_wrong_id?: () => void;
+  }
+}
+
+/** Blank note the practitioner fills in by hand when extraction fails. Current recs come preloaded as "maintien". */
+function emptyNotes(): ConsultationNotes {
+  return {
+    consultation_id: sampleTranscript.consultation_id,
+    patient_id: sampleTranscript.patient_id,
+    genere_le: new Date().toISOString().slice(0, 10),
+    source: "transcript",
+    used_llm: false,
+    motif: [],
+    anamnese: [],
+    complements: patientDossier.recommandations_en_cours.map((r) => ({
+      produit_id: r.produit_id,
+      action: "maintien" as const,
+      posologie: r.posologie,
+      duree: null,
+      quote: null,
+    })),
+    hygiene_de_vie: [],
+    suivi: [],
+  };
+}
 
 export default function HomePage() {
   const [step, setStep] = useState<Step>("dossier");
@@ -17,11 +47,11 @@ export default function HomePage() {
   const [draft, setDraft] = useState<ConsultationNotes | null>(null);
   const [attached, setAttached] = useState<ConsultationNotes | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [status, setStatus] = useState<ExtractionStatus | null>(null);
 
-  async function generate() {
+  async function generate(simulate?: Simulate) {
     setLoading(true);
-    setError(null);
+    setStatus(null);
     try {
       const res = await fetch("/api/notes", {
         method: "POST",
@@ -31,25 +61,71 @@ export default function HomePage() {
           patient: patientDossier,
           consultation_id: sampleTranscript.consultation_id,
           patient_id: sampleTranscript.patient_id,
+          simulate,
         }),
       });
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.error || "Échec de la génération");
+        const fallback = !draft;
+        setStatus({
+          kind: "error",
+          message:
+            (data.error || "L'extraction a échoué. Réessayez la génération.") +
+            (fallback ? " La note ci-contre est vide, à compléter manuellement." : ""),
+        });
+        if (fallback) setDraft(emptyNotes());
+        return;
       }
-      const { raw, ...notes } = data;
+      const { raw, sent, warning, ...notes } = data;
+      if (sent) {
+        console.log("[llm sent] model: " + sent.model);
+        console.log("[llm sent] system:\n" + sent.system);
+        console.log("[llm sent] user:\n" + sent.user);
+      }
       if (typeof raw === "string") {
         console.log("[llm raw]\n" + raw);
       } else {
         console.log("[llm] mock notes (no raw model text)", notes);
       }
       setDraft(notes as ConsultationNotes);
+      setStatus(
+        warning
+          ? { kind: "warning", message: warning as string }
+          : {
+              kind: "ok",
+              message: "Extraction réussie : toutes les informations ont été correctement identifiées.",
+            },
+      );
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Erreur inconnue");
+      console.error("[generate] client-side failure before/during the request:", e);
+      const detail = e instanceof Error ? e.message : String(e);
+      const fallback = !draft;
+      setStatus({
+        kind: "error",
+        message:
+          `L'extraction a échoué : impossible de contacter le service d'IA (${detail}). Vérifiez la connexion et réessayez.` +
+          (fallback ? " La note ci-contre est vide, à compléter manuellement." : ""),
+      });
+      if (fallback) setDraft(emptyNotes());
     } finally {
       setLoading(false);
     }
   }
+
+  const generateRef = useRef(generate);
+  generateRef.current = generate;
+
+  useEffect(() => {
+    window.simulate_wrong_json = () => generateRef.current("invalid_json");
+    window.simulate_wrong_id = () => generateRef.current("wrong_id");
+    console.log(
+      "[dev] simulate_wrong_json() and simulate_wrong_id() are available in this console to force an extraction failure/warning without calling the model.",
+    );
+    return () => {
+      delete window.simulate_wrong_json;
+      delete window.simulate_wrong_id;
+    };
+  }, []);
 
   return (
     <div className="flex h-dvh flex-col">
@@ -72,7 +148,7 @@ export default function HomePage() {
             onTranscriptChange={setTranscript}
             notes={draft}
             onNotesChange={setDraft}
-            onGenerate={generate}
+            onGenerate={() => generate()}
             onConfirm={() => {
               if (!draft) return;
               setAttached(draft);
@@ -80,7 +156,7 @@ export default function HomePage() {
             }}
             onBack={() => setStep("dossier")}
             loading={loading}
-            error={error}
+            status={status}
           />
         </div>
       )}

@@ -233,25 +233,27 @@ export function DossierView({
                           <div style={{ fontSize: 14, fontWeight: 500 }}>{b.nom}</div>
                           <div style={{ fontSize: 12, color: "#9A9285" }}>réf. {b.ref} {b.unite}</div>
                         </div>
-                        <div className="relative" style={{ height: 6, borderRadius: 3, background: "#F0EBE0" }}>
+                        <div className="relative" style={{ height: 8, borderRadius: 4, background: "#EDE6D6" }}>
                           <div
                             className="absolute inset-y-0"
                             style={{
                               left: `${pct(lo, hi, lo)}%`,
                               width: `${pct(lo, hi, hi) - pct(lo, hi, lo)}%`,
-                              background: "#DFE6DC",
-                              borderRadius: 3,
+                              background: "#BFD4C2",
+                              border: "1px solid #9FBEA5",
+                              borderRadius: 4,
                             }}
                           />
                           <div
                             className="absolute"
                             style={{
-                              top: -4,
+                              top: -5,
                               left: `${pct(lo, hi, b.valeur)}%`,
                               width: 3,
-                              height: 12,
+                              height: 18,
                               borderRadius: 2,
                               background: sty.marker,
+                              boxShadow: "0 0 0 1.5px #FFFDF9",
                             }}
                           />
                         </div>
