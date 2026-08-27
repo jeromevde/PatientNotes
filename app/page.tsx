@@ -19,7 +19,7 @@ declare global {
   }
 }
 
-/** Blank note the practitioner fills in by hand when extraction fails. Current recs come preloaded as "maintien". */
+/** Blank note the practitioner fills in by hand when extraction fails. Current recs stay on the note (code will show them as maintien). */
 function emptyNotes(): ConsultationNotes {
   return {
     consultation_id: sampleTranscript.consultation_id,
@@ -31,7 +31,6 @@ function emptyNotes(): ConsultationNotes {
     anamnese: [],
     complements: patientDossier.recommandations_en_cours.map((r) => ({
       produit_id: r.produit_id,
-      action: "maintien" as const,
       posologie: r.posologie,
       duree: null,
       quote: null,

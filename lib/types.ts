@@ -53,7 +53,6 @@ export type Claim = {
 
 export type ComplementRec = {
   produit_id: string;
-  action: ComplementAction;
   posologie: string | null;
   duree: string | null;
   quote: string | null;

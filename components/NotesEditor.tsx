@@ -5,6 +5,8 @@
 
 import { useEffect, useLayoutEffect, useRef } from "react";
 import { ComplementList } from "@/components/ComplementList";
+import { stoppedRecs } from "@/lib/complements";
+import { patientDossier } from "@/lib/data";
 import type { NoteTab } from "@/lib/quotes";
 import { scrollIfNeeded } from "@/lib/scroll";
 import type { Claim, ComplementRec, ConsultationNotes } from "@/lib/types";
@@ -171,10 +173,13 @@ export function NotesEditor({
     onChange({ ...notes, complements });
   }
 
+  const currentRecs = patientDossier.recommandations_en_cours;
   const tabCounts: Record<NoteTab, number> = {
     motif: notes.motif.length,
     anamnese: notes.anamnese.length,
-    complements: notes.complements.length,
+    complements:
+      notes.complements.length +
+      stoppedRecs(currentRecs, notes.complements).length,
     hygiene: notes.hygiene_de_vie.length,
     suivi: notes.suivi.length,
   };
@@ -230,6 +235,7 @@ export function NotesEditor({
         {tab === "complements" ? (
           <ComplementList
             items={notes.complements}
+            currentRecs={currentRecs}
             transcript={transcript}
             onPatch={(produit_id, patch) =>
               setComplements(
@@ -243,13 +249,12 @@ export function NotesEditor({
                 notes.complements.filter((item) => item.produit_id !== produit_id),
               )
             }
-            onAdd={(produit_id) =>
+            onAdd={(produit_id, rec) =>
               setComplements([
                 ...notes.complements,
                 {
                   produit_id,
-                  action: "ajout",
-                  posologie: null,
+                  posologie: rec?.posologie ?? null,
                   duree: null,
                   quote: null,
                 },

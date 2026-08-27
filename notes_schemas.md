@@ -67,7 +67,6 @@ A quote that is not an exact slice of the transcript is dropped to null (`keepVe
 - `anamnese` Claim[]
 - `complements[]`
   - `produit_id` string (catalog id, never a free-text name)
-  - `action` maintien | ajout | arret
   - `posologie` string | null
   - `duree` string | null
   - `quote` string | null
@@ -80,7 +79,9 @@ Unknown `produit_id`s are currently filtered out. Gap: they should be flagged, n
 
 Facts are arrays, not one blob per section. A practitioner edits one line at a time; the UI can paint one quote at a time. A paragraph would kill both.
 
-Complements stay structured (catalog id + action + posologie), not free text, because they have to map onto Simplycure products — and later onto `recommandations_en_cours`. Same `ingredient` → replace the row (lab swap), don't duplicate the molecule.
+Complements stay structured (catalog id + posologie), not free text, because they have to map onto Simplycure products — and later onto `recommandations_en_cours`. Same `ingredient` → replace the row (lab swap), don't duplicate the molecule.
+
+Arrêt / Ajout / Maintien is not stored. Code infers it from the molecule: on the note + already prescribed → maintien (putting a stopped product back is keep, even another lab); on the note + new molecule → ajout; prescribed and missing from the note → arrêt.
 
 These two patient lists would be updated on Confirm in a real product (biomarkers stay on the lab pipeline):
 

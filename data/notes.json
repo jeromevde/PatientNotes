@@ -51,42 +51,36 @@
   "complements": [
     {
       "produit_id": "prd_mag",
-      "action": "maintien",
       "posologie": "1 gélule matin + soir",
       "duree": null,
       "quote": "On continue le magnésium bisglycinate matin et soir"
     },
     {
       "produit_id": "prd_omega3",
-      "action": "maintien",
       "posologie": "2 gélules/jour au repas",
       "duree": null,
       "quote": "On garde les oméga-3"
     },
     {
       "produit_id": "prd_fer",
-      "action": "ajout",
       "posologie": "1 gélule le matin à jeun",
       "duree": null,
       "quote": "On ajoute du fer bisglycinate avec de la vitamine C"
     },
     {
       "produit_id": "prd_vitd",
-      "action": "ajout",
       "posologie": "2000 UI / jour",
       "duree": null,
       "quote": "on démarre la vitamine D3, 2000 UI par jour"
     },
     {
       "produit_id": "prd_ashwa",
-      "action": "ajout",
       "posologie": "le soir",
       "duree": "1 mois",
       "quote": "de l'ashwagandha le soir pendant un mois"
     },
     {
       "produit_id": "prd_probio",
-      "action": "ajout",
       "posologie": null,
       "duree": "1 mois",
       "quote": "on teste un mois de probiotiques pour les ballonnements"

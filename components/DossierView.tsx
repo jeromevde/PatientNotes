@@ -8,6 +8,7 @@
 import type { CSSProperties } from "react";
 import { Newsreader, Instrument_Sans, IBM_Plex_Mono } from "next/font/google";
 import { LabMark } from "@/components/LabMark";
+import { actionOnNote } from "@/lib/complements";
 import { patientDossier, productById, formatPrice } from "@/lib/data";
 import { ageYears, formatDate } from "@/lib/format";
 import type { BiomarkerStatus, ConsultationNotes, PatientDossier } from "@/lib/types";
@@ -393,7 +394,14 @@ export function DossierView({
                             {attachedNotes.motif.map((item) => item.text).join(" · ")}
                           </p>
                           <p className="mt-2" style={{ fontSize: 12, color: "#6E6759" }}>
-                            {attachedNotes.complements.filter((x) => x.action === "ajout").length} complément(s) à
+                            {attachedNotes.complements.filter(
+                              (x) =>
+                                actionOnNote(
+                                  x.produit_id,
+                                  patientDossier.recommandations_en_cours,
+                                ) === "ajout",
+                            ).length}{" "}
+                            complément(s) à
                             ajouter · {attachedNotes.suivi.map((item) => item.text).join(" · ")}
                           </p>
                         </div>

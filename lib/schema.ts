@@ -26,11 +26,6 @@ export const consultationNotesSchema = z.object({
       produit_id: z
         .string()
         .describe("Must be an id from the catalog, never a free-text name"),
-      action: z
-        .enum(["arret", "ajout", "maintien"])
-        .describe(
-          "One bucket: arret (stop a current rec), ajout (new), maintien (keep a current rec). Unmentioned current recs → maintien.",
-        ),
       posologie: z.string().nullable(),
       duree: z.string().nullable(),
       quote: z

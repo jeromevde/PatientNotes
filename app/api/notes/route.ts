@@ -62,12 +62,8 @@ Règles:
 - Motif, anamnèse, hygiène de vie et suivi : tableau de faits atomiques. Chaque item = une phrase clinique ("text") + un "quote" recopié TEL QUEL depuis le transcript (sous-chaîne exacte), ou null. Un fait = une phrase. Pas de paragraphe unique.
 - Les faits et les quotes viennent UNIQUEMENT du transcript. Jamais de l'historique, des labs, ni d'un autre champ dossier. Pas d'extrait exact → quote = null.
 - Ne pas inventer de valeurs de laboratoire. Mentionne un bilan seulement s'il est dit dans le transcript.
-- Compléments: range CHAQUE produit dans exactement une des trois catégories:
-  - "arret" — déjà en cours ET le praticien dit d'arrêter
-  - "ajout" — nouveau, absent de la liste déjà en cours
-  - "maintien" — déjà en cours ET on continue. Si un complément en cours n'est pas mentionné, mets-le en maintien (ne suppose pas un arrêt).
-- produit_id DOIT être un id du catalogue. Plusieurs SKUs peuvent partager le même ingredient — choisis un id. Pour maintien ou arrêt, garde l'id déjà en cours.
-- La liste "déjà en cours" sert UNIQUEMENT à classer (arret / ajout / maintien). Ce n'est pas une source de faits ni de quotes.
+- Compléments: liste les produits du plan qui continuent ou qui commencent (id du catalogue, posologie, durée, quote). N'inclus PAS un produit qu'on arrête. N'écris PAS de champ "action": le code le déduit (présent + déjà en cours = maintien, présent + nouveau = ajout, déjà en cours et absent de la liste = arrêt). Plusieurs SKUs peuvent partager le même ingredient — choisis un id. Pour un produit déjà en cours que l'on continue, garde l'id déjà en cours.
+- La liste "déjà en cours" dit quels ids existent aujourd'hui. Ce n'est pas une source de faits ni de quotes.
 - Réponds UNIQUEMENT avec un objet JSON valide. Pas de markdown, pas de backticks.
 
 Catalogue:
@@ -80,7 +76,7 @@ function userPrompt(input: {
   consultation_id: string;
   patient_id: string;
 }): string {
-  return `Compléments déjà en cours (pour action seulement, jamais comme quote):
+  return `Compléments déjà en cours (inclus-les si on continue, omets-les si on arrête — pas de champ action):
 ${recsBlock(input.recs)}
 
 Consultation id: ${input.consultation_id}
@@ -99,9 +95,7 @@ Forme JSON attendue:
   "motif": [{ "text": "une phrase", "quote": "extrait exact du transcript" }],
   "anamnese": [{ "text": "une phrase", "quote": "extrait exact du transcript" }],
   "complements": [
-    { "produit_id": "prd_...", "action": "arret", "posologie": null, "duree": null, "quote": "extrait exact du transcript" },
-    { "produit_id": "prd_...", "action": "ajout", "posologie": "...", "duree": "...", "quote": "..." },
-    { "produit_id": "prd_...", "action": "maintien", "posologie": "...", "duree": null, "quote": "..." }
+    { "produit_id": "prd_...", "posologie": "...", "duree": null, "quote": "extrait exact du transcript" }
   ],
   "hygiene_de_vie": [{ "text": "une phrase", "quote": "extrait exact du transcript" }],
   "suivi": [{ "text": "une phrase", "quote": "extrait exact du transcript" }]
@@ -198,7 +192,6 @@ export async function POST(req: Request) {
         ...mockNotes.complements,
         {
           produit_id: "prd_does_not_exist",
-          action: "ajout" as const,
           posologie: "1 gélule/jour",
           duree: null,
           quote: null,
