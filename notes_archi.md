@@ -3,6 +3,9 @@
 
 General thoughts after reading the text. Main reuirements seems to be a focus on UX, user experience, following the caretaker journey, EXPLAINABILITY, fake data and maintainablility (which i would say means the code should be simple, not overengineered)
 
+THIS SHOULD BE A TOOL - SIMPLE - NOT TOO MUCH INFO SO THE IT HELPS THE PRACTITIONER AND DOESN'T
+OVERLOAD HIM WITH USELESS DETAILS
+
 | | what |
 |---|---|
 | **input** | free text transcript · structured patient json · structured product json |
@@ -70,10 +73,8 @@ grading is as follows:
 
  # Todo
  - fix main ui, bilan,  claude code ?
- - think about ajout / maintient / removal logic ? probably need 3 sections actually !!!
  - add a landing page with patient list ? -> would be good for a test suite
 
  # Gaps
  - Unknown catalog ids are silently dropped. 
- - Ajout / maintien is still a dropdown
- - Claude Design
+ - stress test with adverserial transcripts
