@@ -59,7 +59,7 @@ function ClaimList({
             <div className="relative inline-grid max-w-full">
               <span
                 aria-hidden
-                className="pointer-events-none invisible col-start-1 row-start-1 whitespace-pre text-sm leading-relaxed"
+                className="pointer-events-none invisible col-start-1 row-start-1 whitespace-pre pr-1 text-sm leading-relaxed"
               >
                 {item.text || (isAdd ? "Ajouter un fait…" : " ")}
               </span>
