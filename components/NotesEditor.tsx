@@ -56,6 +56,13 @@ function ClaimList({
         const on = Boolean(focusQuote) && item.quote === focusQuote;
         return (
           <div key={i} className="py-1.5">
+            <div className="relative inline-grid max-w-full">
+              <span
+                aria-hidden
+                className="pointer-events-none invisible col-start-1 row-start-1 whitespace-pre text-sm leading-relaxed"
+              >
+                {item.text || (isAdd ? "Ajouter un fait…" : " ")}
+              </span>
             <input
               ref={(el) => {
                 inputs.current[i] = el;
@@ -121,10 +128,12 @@ function ClaimList({
                   focusAt.current = Math.max(0, i - 1);
                 }
               }}
-              className={`quote-paint block w-full text-sm leading-relaxed outline-none text-ink ${
+              placeholder={isAdd ? "Ajouter un fait…" : undefined}
+              className={`quote-paint col-start-1 row-start-1 m-0 min-w-0 w-full border-0 p-0 text-sm leading-relaxed outline-none text-ink ${
                 on ? "bg-mark underline decoration-2 underline-offset-4 decoration-accent" : "bg-transparent"
               }`}
             />
+            </div>
           </div>
         );
       })}
