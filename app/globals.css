@@ -1,21 +1,21 @@
-/* Colors, fonts, and base page look. Components use these names (paper, ink, accent, …). */
+/* One palette and one font stack for dossier and note-taker. */
 
 @import "tailwindcss";
 
 :root {
-  --paper: #f4f1ea;
-  --ink: #1c2418;
-  --muted: #5c6756;
-  --line: #ddd6c8;
-  --card: #fffcf7;
-  --accent: #215c3a;
-  --accent-soft: #dceadf;
-  --warn: #8a4b12;
-  --warn-soft: #f3e4d1;
+  --paper: #f7f3ea;
+  --ink: #1c1b18;
+  --muted: #8a8377;
+  --line: #e6dfd1;
+  --card: #fffdf9;
+  --accent: #2e6b4f;
+  --accent-soft: #e4ebe3;
+  --warn: #b9752b;
+  --warn-soft: #fcf3e7;
   --mark: #e4e0d8;
   --mark-on: #8a8680;
-  --keep: #3a5470;
-  --keep-soft: #e4eaf0;
+  --keep: #2e6b4f;
+  --keep-soft: #e4ebe3;
 }
 
 @theme inline {
@@ -45,13 +45,17 @@ body {
 }
 
 body {
-  font-family: var(--font-sans), system-ui, sans-serif;
+  font-family: var(--font-sans), Helvetica, Arial, sans-serif;
   background: var(--paper);
   color: var(--ink);
 }
 
 .font-serif {
-  font-family: var(--font-serif), ui-serif, Georgia, serif;
+  font-family: var(--font-serif), Georgia, serif;
+}
+
+.font-mono {
+  font-family: var(--font-mono), ui-monospace, monospace;
 }
 
 button,

@@ -1,39 +1,20 @@
 // Patient dossier screen: identity, current plan, biomarkers, case timeline.
-// Visual design ported from the Claude Design mockup. Self-contained styling
-// (own fonts + colors) so it doesn't touch the note-taker's look.
-// Does not edit the patient. Shows an attached note after Confirm.
+// Fonts and colors come from the app shell. Does not edit the patient.
+// Shows an attached note after Confirm.
 
 "use client";
 
 import type { CSSProperties } from "react";
-import { Newsreader, Instrument_Sans, IBM_Plex_Mono } from "next/font/google";
 import { LabMark } from "@/components/LabMark";
 import { actionOnNote } from "@/lib/complements";
 import { patientDossier, productById, formatPrice } from "@/lib/data";
 import { ageYears, formatDate } from "@/lib/format";
 import type { BiomarkerStatus, ConsultationNotes, PatientDossier } from "@/lib/types";
 
-const serif = Newsreader({
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
-  style: ["normal", "italic"],
-  variable: "--font-dossier-serif",
-});
-const sans = Instrument_Sans({
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
-  variable: "--font-dossier-sans",
-});
-const mono = IBM_Plex_Mono({
-  subsets: ["latin"],
-  weight: ["400", "500"],
-  variable: "--font-dossier-mono",
-});
+const serifFont = { fontFamily: "var(--font-serif), Georgia, serif" };
+const monoFont = { fontFamily: "var(--font-mono), ui-monospace, monospace" };
 
-const serifFont = { fontFamily: "var(--font-dossier-serif), Georgia, serif" };
-const monoFont = { fontFamily: "var(--font-dossier-mono), monospace" };
-
-const CARD = { background: "#FFFDF9", border: "1px solid #E6DFD1" };
+const CARD = { background: "var(--card)", border: "1px solid var(--line)" };
 const LABEL: CSSProperties = {
   fontSize: 11,
   letterSpacing: "0.16em",
@@ -104,8 +85,8 @@ export function DossierView({
 
   return (
     <div
-      className={`${serif.variable} ${sans.variable} ${mono.variable} min-h-full`}
-      style={{ background: "#F7F3EA", padding: "28px 20px 64px", fontFamily: "var(--font-dossier-sans), Helvetica, Arial, sans-serif", color: "#1C1B18" }}
+      className="min-h-full"
+      style={{ background: "var(--paper)", padding: "28px 20px 64px", color: "var(--ink)" }}
     >
       <div className="mx-auto" style={{ maxWidth: 1320 }}>
         <div className="mb-6 flex flex-wrap items-center justify-between gap-4">

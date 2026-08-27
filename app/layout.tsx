@@ -1,18 +1,26 @@
-// Shell around every page: fonts, tab title, and the shared background styles.
+// Shell around every page: one font pair, one palette, both screens.
 
 import type { Metadata } from "next";
-import { DM_Sans, Instrument_Serif } from "next/font/google";
+import { IBM_Plex_Mono, Instrument_Sans, Newsreader } from "next/font/google";
 import "./globals.css";
 
-const sans = DM_Sans({
+const sans = Instrument_Sans({
   subsets: ["latin"],
+  weight: ["400", "500", "600"],
   variable: "--font-sans",
 });
 
-const serif = Instrument_Serif({
+const serif = Newsreader({
   subsets: ["latin"],
-  weight: "400",
+  weight: ["400", "500", "600"],
+  style: ["normal", "italic"],
   variable: "--font-serif",
+});
+
+const mono = IBM_Plex_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500"],
+  variable: "--font-mono",
 });
 
 export const metadata: Metadata = {
@@ -27,7 +35,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr">
-      <body className={`${sans.variable} ${serif.variable}`}>{children}</body>
+      <body className={`${sans.variable} ${serif.variable} ${mono.variable}`}>
+        {children}
+      </body>
     </html>
   );
 }

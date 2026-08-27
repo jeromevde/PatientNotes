@@ -2,11 +2,8 @@
 
 // Note-taker workspace: transcript and structured notes are two panes.
 // Each pane scrolls on its own. After Generate, quotes on the open tab paint the transcript.
-// Header + empty state use their own fonts/colors (matching the dossier redesign) so they
-// don't touch the rest of the app's look. Editing logic, quotes, and the /api/notes call are untouched.
 
 import { useState, type CSSProperties } from "react";
-import { Newsreader, Instrument_Sans } from "next/font/google";
 import { NotesEditor, noteTabs } from "@/components/NotesEditor";
 import { TranscriptView } from "@/components/TranscriptView";
 import { patientDossier, sampleTranscript } from "@/lib/data";
@@ -14,25 +11,13 @@ import { formatDate } from "@/lib/format";
 import { quotesForTab, type NoteTab } from "@/lib/quotes";
 import type { ConsultationNotes } from "@/lib/types";
 
-const serif = Newsreader({
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
-  variable: "--font-notetaker-serif",
-});
-const sans = Instrument_Sans({
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
-  variable: "--font-notetaker-sans",
-});
-
-const serifFont = { fontFamily: "var(--font-notetaker-serif), Georgia, serif" };
-const sansFont = { fontFamily: "var(--font-notetaker-sans), Helvetica, Arial, sans-serif" };
+const serifFont = { fontFamily: "var(--font-serif), Georgia, serif" };
 
 export type ExtractionStatus = { kind: "ok" | "warning" | "error"; message: string };
 
 const STATUS_STYLE: Record<ExtractionStatus["kind"], CSSProperties> = {
-  ok: { background: "#E4EBE3", color: "#2E5A3E", borderColor: "#D6E1D7" },
-  warning: { background: "#FCF3E7", color: "#8A5320", borderColor: "#F0DFC4" },
+  ok: { background: "var(--accent-soft)", color: "var(--accent)", borderColor: "var(--line)" },
+  warning: { background: "var(--warn-soft)", color: "var(--warn)", borderColor: "var(--line)" },
   error: { background: "#F9E4E1", color: "#A23B2E", borderColor: "#F0CFC8" },
 };
 
@@ -77,8 +62,8 @@ function GeneratePrompt({
 }) {
   return (
     <div
-      className={`${serif.variable} ${sans.variable} rounded-2xl p-6`}
-      style={{ ...sansFont, background: "#FFFDF9", border: "1px solid #E6DFD1" }}
+      className="rounded-2xl p-6"
+      style={{ background: "var(--card)", border: "1px solid var(--line)" }}
     >
       <div style={{ ...serifFont, fontSize: 20, marginBottom: 8 }}>Générer la note structurée</div>
       <p style={{ fontSize: 13.5, color: "#6E6759", lineHeight: 1.6, marginBottom: 20 }}>
@@ -129,10 +114,10 @@ export function NoteTakerView({
   const canGenerate = !loading && transcript.trim().length >= 20;
 
   return (
-    <div className={`${serif.variable} ${sans.variable} flex h-full min-h-0 flex-col`}>
+    <div className="flex h-full min-h-0 flex-col">
       <header
         className="flex shrink-0 flex-wrap items-center justify-between gap-4 border-b px-6 py-4"
-        style={{ ...sansFont, background: "#FBF8F1", borderColor: "#E6DFD1" }}
+        style={{ background: "var(--paper)", borderColor: "var(--line)" }}
       >
         <div>
           <button
@@ -143,7 +128,7 @@ export function NoteTakerView({
           >
             ← Dossier
           </button>
-          <h1 style={{ ...serifFont, fontSize: 29, lineHeight: 1.05, letterSpacing: "-0.01em", color: "#1C1B18" }}>
+          <h1 style={{ ...serifFont, fontSize: 29, lineHeight: 1.05, letterSpacing: "-0.01em", color: "var(--ink)" }}>
             Note de consultation
           </h1>
           <p style={{ fontSize: 13, color: "#8A8377", marginTop: 5 }}>

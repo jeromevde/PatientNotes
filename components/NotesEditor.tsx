@@ -185,10 +185,7 @@ export function NotesEditor({
   };
 
   return (
-    <div
-      className="flex min-h-0 flex-1 flex-col"
-      style={{ fontFamily: "var(--font-notetaker-sans), Helvetica, Arial, sans-serif" }}
-    >
+    <div className="flex min-h-0 flex-1 flex-col">
       <div className="flex flex-wrap gap-1 pb-3" style={{ borderBottom: "1px solid #E6DFD1" }}>
         {noteTabs.map((t) => {
           const active = t.id === tab;
