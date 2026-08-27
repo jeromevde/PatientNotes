@@ -9,7 +9,7 @@ import { useState } from "react";
 import { Newsreader, Instrument_Sans } from "next/font/google";
 import { NotesEditor, noteTabs } from "@/components/NotesEditor";
 import { TranscriptView } from "@/components/TranscriptView";
-import { patientDossier, products } from "@/lib/data";
+import { patientDossier, products, sampleTranscript } from "@/lib/data";
 import { formatDate } from "@/lib/format";
 import { quotesForTab, type NoteTab } from "@/lib/quotes";
 import type { ConsultationNotes } from "@/lib/types";
@@ -155,16 +155,17 @@ export function NoteTakerView({
           <button
             type="button"
             onClick={onBack}
-            className="mb-1.5 inline-flex items-center rounded-lg px-3 py-1.5 text-xs font-medium"
-            style={{ color: "#6E6759", background: "#FFFDF9", border: "1px solid #E6DFD1" }}
+            className="mb-1.5 inline-block text-xs hover:text-[#2E6B4F]"
+            style={{ color: "#8A8377" }}
           >
             ← Dossier
           </button>
-          <h1 style={{ ...serifFont, fontSize: 24, lineHeight: 1.1, color: "#1C1B18" }}>
+          <h1 style={{ ...serifFont, fontSize: 29, lineHeight: 1.05, letterSpacing: "-0.01em", color: "#1C1B18" }}>
             Note de consultation
           </h1>
-          <p style={{ fontSize: 12.5, color: "#8A8377", marginTop: 3 }}>
-            Transcript à gauche, notes à droite — vérifiez avant de confirmer.
+          <p style={{ fontSize: 13, color: "#8A8377", marginTop: 5 }}>
+            {patientDossier.patient.prenom} {patientDossier.patient.nom} · {formatDate(sampleTranscript.date)} ·{" "}
+            {notes ? "à vérifier avant de confirmer" : "à analyser"}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">

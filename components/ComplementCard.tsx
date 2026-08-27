@@ -50,10 +50,10 @@ export function ComplementCard({
             <p
               className={
                 active
-                  ? "quote-paint w-fit bg-mark-on text-sm font-semibold leading-relaxed text-card"
+                  ? "quote-paint w-fit bg-mark text-sm font-semibold leading-relaxed underline decoration-2 underline-offset-4 decoration-accent"
                   : "text-sm font-semibold leading-relaxed"
               }
-              style={active ? undefined : { color: "#1C1B18" }}
+              style={{ color: "#1C1B18" }}
             >
               {product?.nom ?? produitId}
             </p>

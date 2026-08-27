@@ -121,8 +121,8 @@ function ClaimList({
                   focusAt.current = Math.max(0, i - 1);
                 }
               }}
-              className={`quote-paint block w-full text-sm leading-relaxed outline-none ${
-                on ? "bg-mark-on text-card" : "bg-transparent"
+              className={`quote-paint block w-full text-sm leading-relaxed outline-none text-ink ${
+                on ? "bg-mark underline decoration-2 underline-offset-4 decoration-accent" : "bg-transparent"
               }`}
             />
           </div>

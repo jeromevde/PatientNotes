@@ -65,7 +65,7 @@ export function TranscriptView({
         }
         className={
           isActive
-            ? "quote-paint bg-mark-on text-card"
+            ? "quote-paint bg-mark text-ink underline decoration-2 underline-offset-4 decoration-accent"
             : "quote-paint bg-mark text-ink"
         }
       >
