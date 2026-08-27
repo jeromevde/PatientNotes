@@ -6,14 +6,8 @@ import { LabMark } from "@/components/LabMark";
 import { formatPrice, productById } from "@/lib/data";
 import { formatDate } from "@/lib/format";
 
-export const fieldBox =
-  "mt-1 w-full rounded-lg border border-line bg-white px-2 py-1.5 text-sm text-ink";
-
-const toneEdge = {
-  ajout: "border-l-accent",
-  maintien: "border-l-keep",
-  arret: "border-l-warn",
-};
+export const fieldBox = "mt-1.5 w-full rounded-lg px-3 py-2 text-sm outline-none";
+export const fieldBoxStyle = { background: "#FBF8F1", border: "1px solid #E6DFD1", color: "#1C1B18" };
 
 export function ComplementCard({
   produitId,
@@ -23,7 +17,6 @@ export function ComplementCard({
   children,
   className,
   active = false,
-  tone,
   ...liProps
 }: {
   produitId: string;
@@ -33,23 +26,21 @@ export function ComplementCard({
   children?: ReactNode;
   className?: string;
   active?: boolean;
-  tone?: "ajout" | "maintien" | "arret";
 } & Omit<LiHTMLAttributes<HTMLLIElement>, "children">) {
   const product = productById(produitId);
   const meta = [
-    product ? formatPrice(product.prix) : "Hors catalogue",
+    product ? `${formatPrice(product.prix)} / mois` : "Hors catalogue",
     depuis ? `depuis ${formatDate(depuis)}` : null,
   ]
     .filter(Boolean)
     .join(" · ");
 
-  const edge = tone ? `border-l-[3px] ${toneEdge[tone]}` : "";
-
   return (
     <li
       {...liProps}
       data-produit-id={produitId}
-      className={`rounded-xl border border-line bg-card p-4 ${edge} ${className ?? ""}`}
+      className={`rounded-2xl p-4 ${className ?? ""}`}
+      style={{ background: "#FFFDF9", border: "1px solid #E6DFD1" }}
     >
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="flex items-center gap-3">
@@ -59,13 +50,14 @@ export function ComplementCard({
             <p
               className={
                 active
-                  ? "quote-paint w-fit bg-mark-on text-sm font-medium leading-relaxed text-card"
-                  : "text-sm font-medium leading-relaxed"
+                  ? "quote-paint w-fit bg-mark-on text-sm font-semibold leading-relaxed text-card"
+                  : "text-sm font-semibold leading-relaxed"
               }
+              style={active ? undefined : { color: "#1C1B18" }}
             >
               {product?.nom ?? produitId}
             </p>
-            <p className="text-xs text-muted">{meta}</p>
+            <p style={{ fontSize: 12.5, color: "#9A9285" }}>{meta}</p>
           </div>
         </div>
         {trailing}
@@ -85,7 +77,7 @@ export function ComplementField({
   children: ReactNode;
 }) {
   return (
-    <label className={`text-xs text-muted ${className ?? ""}`}>
+    <label className={className} style={{ fontSize: 12, color: "#8A8377" }}>
       {label}
       {children}
     </label>

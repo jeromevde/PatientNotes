@@ -162,9 +162,20 @@ export function NotesEditor({
     onChange({ ...notes, complements });
   }
 
+  const tabCounts: Record<NoteTab, number> = {
+    motif: notes.motif.length,
+    anamnese: notes.anamnese.length,
+    complements: notes.complements.length,
+    hygiene: notes.hygiene_de_vie.length,
+    suivi: notes.suivi.length,
+  };
+
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
-      <div className="flex flex-wrap gap-1 border-b border-line pb-2">
+    <div
+      className="flex min-h-0 flex-1 flex-col"
+      style={{ fontFamily: "var(--font-notetaker-sans), Helvetica, Arial, sans-serif" }}
+    >
+      <div className="flex flex-wrap gap-1 pb-3" style={{ borderBottom: "1px solid #E6DFD1" }}>
         {noteTabs.map((t) => {
           const active = t.id === tab;
           return (
@@ -172,13 +183,17 @@ export function NotesEditor({
               key={t.id}
               type="button"
               onClick={() => onTabChange(t.id)}
-              className={`rounded-full px-3 py-1.5 text-xs font-medium ${
+              className="inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-medium"
+              style={
                 active
-                  ? "bg-accent text-white"
-                  : "bg-transparent text-muted hover:bg-accent-soft hover:text-ink"
-              }`}
+                  ? { background: "#2E6B4F", color: "#FFFDF9" }
+                  : { background: "transparent", color: "#3A342A" }
+              }
             >
               {t.label}
+              <span style={{ fontSize: 11.5, color: active ? "rgba(255,253,249,0.75)" : "#9A9285" }}>
+                {tabCounts[t.id]}
+              </span>
             </button>
           );
         })}

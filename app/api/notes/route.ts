@@ -166,20 +166,17 @@ export async function POST(req: Request) {
     });
     const model =
       process.env.OPENROUTER_MODEL ?? "anthropic/claude-haiku-4.5";
+    const system = systemPrompt();
+    const user = userPrompt({ transcript, recs, consultation_id, patient_id });
+    console.log("[llm sent] model: " + model);
+    console.log("[llm sent] system:\n" + system);
+    console.log("[llm sent] user:\n" + user);
     const completion = await client.chat.completions.create({
       model,
       temperature: 0,
       messages: [
-        { role: "system", content: systemPrompt() },
-        {
-          role: "user",
-          content: userPrompt({
-            transcript,
-            recs,
-            consultation_id,
-            patient_id,
-          }),
-        },
+        { role: "system", content: system },
+        { role: "user", content: user },
       ],
       response_format: { type: "json_object" },
     });

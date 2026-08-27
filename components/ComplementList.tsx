@@ -8,9 +8,9 @@ import {
   ComplementCard,
   ComplementField,
   fieldBox,
+  fieldBoxStyle,
 } from "@/components/ComplementCard";
 import { LabMark } from "@/components/LabMark";
-import { Quote } from "@/components/Quote";
 import { formatPrice, productById, products } from "@/lib/data";
 import { complementHighlight } from "@/lib/quotes";
 import { scrollIfNeeded } from "@/lib/scroll";
@@ -19,25 +19,25 @@ import type { ComplementAction, ComplementRec } from "@/lib/types";
 const groups: {
   action: ComplementAction;
   label: string;
-  title: string;
+  color: string;
   empty: string;
 }[] = [
   {
     action: "arret",
     label: "Arrêt",
-    title: "text-warn",
+    color: "#B9752B",
     empty: "Aucun arrêt.",
   },
   {
     action: "ajout",
     label: "Ajout",
-    title: "text-accent",
+    color: "#2E6B4F",
     empty: "Aucun ajout.",
   },
   {
     action: "maintien",
     label: "Maintien",
-    title: "text-keep",
+    color: "#2E6B4F",
     empty: "Aucun maintien.",
   },
 ];
@@ -108,19 +108,21 @@ export function ComplementList({
         return (
           <section key={group.action}>
             <h3
-              className={`text-xs font-medium uppercase tracking-[0.14em] ${group.title}`}
+              className="text-xs font-semibold uppercase tracking-[0.14em]"
+              style={{ color: group.color }}
             >
               {group.label}
             </h3>
             {rows.length === 0 ? (
-              <p className="mt-2 text-sm text-muted">{group.empty}</p>
+              <p className="mt-2 text-sm" style={{ color: "#9A9285" }}>
+                {group.empty}
+              </p>
             ) : (
               <ul className="mt-2 space-y-3">
                 {rows.map((item) => (
                   <ComplementCard
                     key={item.produit_id}
                     produitId={item.produit_id}
-                    tone={item.action}
                     onClick={() =>
                       onFocusQuote(
                         complementHighlight(transcript, item.produit_id),
@@ -132,7 +134,8 @@ export function ComplementList({
                         focusQuote
                     }
                     trailing={
-                      <div className="flex flex-wrap items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-3.5" style={{ fontSize: 12.5 }}>
+                        <span style={{ color: "#2E6B4F", fontWeight: 600 }}>{actionLabel[item.action]}</span>
                         {otherActions[item.action].map((next) => (
                           <button
                             key={next}
@@ -141,7 +144,8 @@ export function ComplementList({
                               e.stopPropagation();
                               onPatch(item.produit_id, { action: next });
                             }}
-                            className="text-xs text-muted hover:text-ink hover:underline"
+                            style={{ color: "#9A9285" }}
+                            className="hover:text-[#1C1B18]"
                           >
                             {actionLabel[next]}
                           </button>
@@ -152,7 +156,8 @@ export function ComplementList({
                             e.stopPropagation();
                             onRemove(item.produit_id);
                           }}
-                          className="text-xs text-warn hover:underline"
+                          style={{ color: "#B9752B" }}
+                          className="hover:text-[#8A5320]"
                         >
                           Retirer
                         </button>
@@ -160,7 +165,7 @@ export function ComplementList({
                     }
                   >
                     <div
-                      className="mt-3 grid gap-2 sm:grid-cols-2"
+                      className="mt-3.5 grid gap-3 sm:grid-cols-2"
                       onClick={(e) => e.stopPropagation()}
                     >
                       <ComplementField label="Durée">
@@ -173,12 +178,10 @@ export function ComplementList({
                           }
                           placeholder="ex. 1 mois"
                           className={fieldBox}
+                          style={fieldBoxStyle}
                         />
                       </ComplementField>
-                      <ComplementField
-                        label="Posologie"
-                        className="sm:col-span-2"
-                      >
+                      <ComplementField label="Posologie">
                         <input
                           value={item.posologie ?? ""}
                           onChange={(e) =>
@@ -188,10 +191,10 @@ export function ComplementList({
                           }
                           placeholder="ex. 1 gélule matin"
                           className={fieldBox}
+                          style={fieldBoxStyle}
                         />
                       </ComplementField>
                     </div>
-                    <Quote text={item.quote} />
                   </ComplementCard>
                 ))}
               </ul>
@@ -221,7 +224,7 @@ function CatalogSearch({
   });
 
   return (
-    <div className="rounded-xl border border-line bg-card p-3">
+    <div>
       <input
         value={query}
         onChange={(e) => {
@@ -232,13 +235,19 @@ function CatalogSearch({
         onBlur={() => {
           window.setTimeout(() => setOpen(false), 150);
         }}
-        placeholder="Ajouter un produit…"
-        className="w-full rounded-lg border border-line bg-white px-3 py-2 text-sm text-ink outline-none focus:border-accent"
+        placeholder="Ajouter un produit du catalogue…"
+        className="w-full rounded-xl px-4 py-3 text-sm outline-none"
+        style={{ background: "#FFFDF9", border: "1px solid #E6DFD1", color: "#1C1B18" }}
       />
       {open ? (
-        <ul className="mt-2 max-h-48 overflow-y-auto">
+        <ul
+          className="mt-2 max-h-48 overflow-y-auto rounded-xl p-1.5"
+          style={{ background: "#FFFDF9", border: "1px solid #E6DFD1" }}
+        >
           {matches.length === 0 ? (
-            <li className="px-1 py-2 text-sm text-muted">Aucun produit.</li>
+            <li className="px-2 py-2 text-sm" style={{ color: "#9A9285" }}>
+              Aucun produit.
+            </li>
           ) : (
             matches.map((p) => (
               <li key={p.id}>
@@ -250,7 +259,7 @@ function CatalogSearch({
                     setQuery("");
                     setOpen(false);
                   }}
-                  className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-sm hover:bg-accent-soft"
+                  className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-sm hover:bg-[#F0F4EF]"
                 >
                   <LabMark lab={p.labo} size={20} />
                   <span>

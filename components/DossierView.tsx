@@ -335,7 +335,7 @@ export function DossierView({
                 return (
                   <div
                     key={key}
-                    className="grid items-start gap-3 py-3.5"
+                    className="grid items-stretch gap-3 py-3.5"
                     style={{
                       gridTemplateColumns: "14px 1fr",
                       borderBottom: isLast ? "none" : "1px solid #EFEADE",
