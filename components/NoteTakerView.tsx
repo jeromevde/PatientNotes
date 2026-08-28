@@ -9,6 +9,7 @@ import { TranscriptView } from "@/components/TranscriptView";
 import { patientDossier, sampleTranscript } from "@/lib/data";
 import { formatDate } from "@/lib/format";
 import { quotesForTab, type NoteTab } from "@/lib/quotes";
+import type { CurrentRec } from "@/lib/complements";
 import type { ConsultationNotes } from "@/lib/types";
 
 export type ExtractionStatus = { kind: "ok" | "warning" | "error"; message: string };
@@ -83,6 +84,7 @@ export function NoteTakerView({
   onBack,
   loading,
   status,
+  currentRecs,
 }: {
   transcript: string;
   onTranscriptChange: (value: string) => void;
@@ -93,6 +95,7 @@ export function NoteTakerView({
   onBack: () => void;
   loading: boolean;
   status: ExtractionStatus | null;
+  currentRecs: CurrentRec[];
 }) {
   const [tab, setTab] = useState<NoteTab>("motif");
   const [focusQuote, setFocusQuote] = useState<string | null>(null);
@@ -176,6 +179,7 @@ export function NoteTakerView({
             <NotesEditor
               notes={notes}
               transcript={transcript}
+              currentRecs={currentRecs}
               onChange={onNotesChange}
               tab={tab}
               onTabChange={(next) => {

@@ -5,8 +5,7 @@
 
 import { useEffect, useLayoutEffect, useRef } from "react";
 import { ComplementList } from "@/components/ComplementList";
-import { stoppedRecs } from "@/lib/complements";
-import { patientDossier } from "@/lib/data";
+import { stoppedRecs, type CurrentRec } from "@/lib/complements";
 import type { NoteTab } from "@/lib/quotes";
 import { scrollIfNeeded } from "@/lib/scroll";
 import type { Claim, ComplementRec, ConsultationNotes } from "@/lib/types";
@@ -154,6 +153,7 @@ export const noteTabs: { id: NoteTab; label: string }[] = [
 export function NotesEditor({
   notes,
   transcript,
+  currentRecs,
   onChange,
   tab,
   onTabChange,
@@ -162,6 +162,7 @@ export function NotesEditor({
 }: {
   notes: ConsultationNotes;
   transcript: string;
+  currentRecs: CurrentRec[];
   onChange: (notes: ConsultationNotes) => void;
   tab: NoteTab;
   onTabChange: (tab: NoteTab) => void;
@@ -173,7 +174,6 @@ export function NotesEditor({
     onChange({ ...notes, complements });
   }
 
-  const currentRecs = patientDossier.recommandations_en_cours;
   const tabCounts: Record<NoteTab, number> = {
     motif: notes.motif.length,
     anamnese: notes.anamnese.length,

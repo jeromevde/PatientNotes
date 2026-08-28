@@ -1,11 +1,13 @@
 "use client";
 
 // The only page. Switches between the patient dossier and the note-taker.
-// Holds transcript + draft notes in memory. Confirm attaches the note; it does not write the patient file.
+// Holds transcript + draft notes in memory. Enregistrer adds a visit and
+// writes the note's complements onto the plan. Refresh resets the mock patient.
 
 import { useEffect, useRef, useState } from "react";
 import { DossierView } from "@/components/DossierView";
 import { NoteTakerView, type ExtractionStatus } from "@/components/NoteTakerView";
+import { planAfterNote } from "@/lib/complements";
 import { patientDossier, sampleTranscript } from "@/lib/data";
 import type { ConsultationNotes } from "@/lib/types";
 
@@ -20,7 +22,7 @@ declare global {
 }
 
 /** Blank note the practitioner fills in by hand when extraction fails. Current recs stay on the note (code will show them as maintien). */
-function emptyNotes(): ConsultationNotes {
+function emptyNotes(recs: typeof patientDossier.recommandations_en_cours): ConsultationNotes {
   return {
     consultation_id: sampleTranscript.consultation_id,
     patient_id: sampleTranscript.patient_id,
@@ -29,7 +31,7 @@ function emptyNotes(): ConsultationNotes {
     used_llm: false,
     motif: [],
     anamnese: [],
-    complements: patientDossier.recommandations_en_cours.map((r) => ({
+    complements: recs.map((r) => ({
       produit_id: r.produit_id,
       posologie: r.posologie,
       duree: null,
@@ -43,8 +45,11 @@ function emptyNotes(): ConsultationNotes {
 export default function HomePage() {
   const [step, setStep] = useState<Step>("dossier");
   const [transcript, setTranscript] = useState(sampleTranscript.text);
+  const [visits, setVisits] = useState(patientDossier.historique_consultations);
+  const [plan, setPlan] = useState(patientDossier.recommandations_en_cours);
+  const [justAddedId, setJustAddedId] = useState<string | null>(null);
+  const [flashPlan, setFlashPlan] = useState(false);
   const [draft, setDraft] = useState<ConsultationNotes | null>(null);
-  const [attached, setAttached] = useState<ConsultationNotes | null>(null);
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<ExtractionStatus | null>(null);
 
@@ -57,7 +62,11 @@ export default function HomePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           transcript,
-          patient: patientDossier,
+          patient: {
+            ...patientDossier,
+            recommandations_en_cours: plan,
+            historique_consultations: visits,
+          },
           consultation_id: sampleTranscript.consultation_id,
           patient_id: sampleTranscript.patient_id,
           simulate,
@@ -72,7 +81,7 @@ export default function HomePage() {
             (data.error || "Échec de l'extraction. Réessayer.") +
             (fallback ? " La note est vide, à compléter à la main." : ""),
         });
-        if (fallback) setDraft(emptyNotes());
+        if (fallback) setDraft(emptyNotes(plan));
         return;
       }
       const { raw, sent, warning, ...notes } = data;
@@ -99,7 +108,7 @@ export default function HomePage() {
           `Échec de l'extraction. Réessayer.` +
           (fallback ? " La note est vide, à compléter à la main." : ""),
       });
-      if (fallback) setDraft(emptyNotes());
+      if (fallback) setDraft(emptyNotes(plan));
     } finally {
       setLoading(false);
     }
@@ -130,7 +139,12 @@ export default function HomePage() {
       {step === "dossier" ? (
         <div className="min-h-0 flex-1 overflow-y-auto">
           <DossierView
-            attachedNotes={attached}
+            consultations={visits}
+            recs={plan}
+            highlightVisitId={justAddedId}
+            highlightPlan={flashPlan}
+            onHighlightDone={() => setJustAddedId(null)}
+            onPlanFlashDone={() => setFlashPlan(false)}
             onStartNote={() => setStep("note")}
           />
         </div>
@@ -142,9 +156,27 @@ export default function HomePage() {
             notes={draft}
             onNotesChange={setDraft}
             onGenerate={() => generate()}
+            currentRecs={plan}
             onConfirm={() => {
               if (!draft) return;
-              setAttached(draft);
+              const id = `cons_${Date.now()}`;
+              const today = new Date().toISOString().slice(0, 10);
+              const motif =
+                draft.motif.map((item) => item.text).find((text) => text.trim()) ||
+                "Consultation";
+              setVisits((current) => [
+                ...current,
+                {
+                  id,
+                  date: today,
+                  motif,
+                },
+              ]);
+              setPlan(planAfterNote(plan, draft.complements, today));
+              setJustAddedId(id);
+              setFlashPlan(true);
+              setDraft(null);
+              setStatus(null);
               setStep("dossier");
             }}
             onBack={() => setStep("dossier")}

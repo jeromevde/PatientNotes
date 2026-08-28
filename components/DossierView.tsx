@@ -1,15 +1,14 @@
 // Patient dossier screen: identity, current plan, biomarkers, case timeline.
-// Fonts and colors come from the app shell. Does not edit the patient.
-// Shows an attached note after Confirm.
+// Fonts and colors come from the app shell. Does not persist the patient.
+// Enregistrer can pass extra visits; they sit in the fil until refresh.
 
 "use client";
 
-import type { CSSProperties } from "react";
+import { useEffect, type CSSProperties } from "react";
 import { LabMark } from "@/components/LabMark";
-import { actionOnNote } from "@/lib/complements";
 import { patientDossier, productById, formatPrice } from "@/lib/data";
 import { ageYears, formatDate } from "@/lib/format";
-import type { BiomarkerStatus, ConsultationNotes, PatientDossier } from "@/lib/types";
+import type { BiomarkerStatus, PatientDossier } from "@/lib/types";
 
 const SECTION: CSSProperties = {
   fontSize: 15,
@@ -44,29 +43,38 @@ type TimelineEntry =
   | { kind: "ouverture"; date: string };
 
 export function DossierView({
-  attachedNotes,
+  consultations,
+  recs,
+  highlightVisitId,
+  highlightPlan,
+  onHighlightDone,
+  onPlanFlashDone,
   onStartNote,
 }: {
-  attachedNotes: ConsultationNotes | null;
+  consultations: PatientDossier["historique_consultations"];
+  recs: PatientDossier["recommandations_en_cours"];
+  highlightVisitId?: string | null;
+  highlightPlan?: boolean;
+  onHighlightDone?: () => void;
+  onPlanFlashDone?: () => void;
   onStartNote: () => void;
 }) {
-  const { patient, historique_consultations, recommandations_en_cours, biomarqueurs_recents } =
+  const { patient, biomarqueurs_recents } =
     patientDossier;
-  const latest = historique_consultations[historique_consultations.length - 1];
 
   const bioByDate = new Map<string, typeof biomarqueurs_recents>();
   for (const b of biomarqueurs_recents) {
     bioByDate.set(b.date, [...(bioByDate.get(b.date) ?? []), b]);
   }
   const timeline: TimelineEntry[] = [
-    ...historique_consultations.map(
+    ...consultations.map(
       (c): TimelineEntry => ({ kind: "consultation", id: c.id, date: c.date, motif: c.motif }),
     ),
     ...[...bioByDate.entries()].map(([date, items]): TimelineEntry => ({ kind: "biologie", date, items })),
     { kind: "ouverture" as const, date: patient.cree_le },
   ].sort((a, b) => b.date.localeCompare(a.date));
 
-  const planItems = recommandations_en_cours
+  const planItems = recs
     .map((r) => ({ ...r, product: productById(r.produit_id) }))
     .filter((r) => r.product);
   const planTotal = planItems.reduce((sum, r) => sum + (r.product?.prix ?? 0), 0);
@@ -77,6 +85,12 @@ export function DossierView({
   );
   const problematicBio = biomarqueurs_recents.filter((b) => b.statut !== "normal");
   const normalBio = biomarqueurs_recents.filter((b) => b.statut === "normal");
+
+  useEffect(() => {
+    if (!highlightVisitId) return;
+    const el = document.querySelector(`[data-visit-id="${highlightVisitId}"]`);
+    if (el instanceof HTMLElement) el.scrollIntoView({ block: "center", behavior: "smooth" });
+  }, [highlightVisitId]);
 
   return (
     <div className="min-h-full" style={{ background: "var(--paper)", color: "var(--ink)" }}>
@@ -120,42 +134,59 @@ export function DossierView({
                 Plan en cours
               </div>
               {planItems.length > 0 ? (
-                <div className="sc-card overflow-hidden">
-                  {planItems.map((item, i) => (
-                    <div
-                      key={item.produit_id}
-                      className="grid items-start gap-4 p-5 max-sm:grid-cols-1 sm:grid-cols-[1fr_auto]"
-                      style={{
-                        borderBottom: i < planItems.length - 1 ? "1px solid var(--line)" : "none",
-                      }}
-                    >
-                      <div className="flex items-start gap-3">
-                        {item.product ? <LabMark lab={item.product.labo} size={28} /> : null}
-                        <div>
-                          <div className="mb-1.5 flex flex-wrap items-center gap-2">
-                            <span className="text-[15px] font-semibold">{item.product?.nom}</span>
-                            <span className="text-[12.5px]" style={{ color: "var(--muted)" }}>{item.product?.labo}</span>
-                          </div>
-                          <span className="sc-pill">{item.posologie}</span>
-                          <div className="mt-2 text-[12.5px]" style={{ color: "var(--muted)" }}>
-                            Depuis le {formatDate(item.depuis)}
+                <div
+                  className={`sc-card flex flex-col${highlightPlan ? " plan-flash" : ""}`}
+                  onAnimationEnd={
+                    highlightPlan
+                      ? (e) => {
+                          if (e.target !== e.currentTarget) return;
+                          if (e.animationName !== "visit-flash") return;
+                          onPlanFlashDone?.();
+                        }
+                      : undefined
+                  }
+                >
+                  <div className="max-h-96 overflow-y-auto">
+                    {planItems.map((item, i) => (
+                      <div
+                        key={item.produit_id}
+                        className="grid items-start gap-4 p-5 max-sm:grid-cols-1 sm:grid-cols-[1fr_auto]"
+                        style={{
+                          borderBottom: i < planItems.length - 1 ? "1px solid var(--line)" : "none",
+                        }}
+                      >
+                        <div className="flex items-start gap-3">
+                          {item.product ? <LabMark lab={item.product.labo} size={28} /> : null}
+                          <div>
+                            <div className="mb-1.5 flex flex-wrap items-center gap-2">
+                              <span className="text-[15px] font-semibold">{item.product?.nom}</span>
+                              <span className="text-[12.5px]" style={{ color: "var(--muted)" }}>{item.product?.labo}</span>
+                            </div>
+                            <span className="sc-pill">{item.posologie}</span>
+                            <div className="mt-2 text-[12.5px]" style={{ color: "var(--muted)" }}>
+                              Depuis le {formatDate(item.depuis)}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                      <div className="text-right max-sm:text-left">
-                        <div className="text-sm font-medium" style={{ color: "var(--accent)" }}>
-                          {item.product ? formatPrice(item.product.prix) : ""}
+                        <div className="text-right max-sm:text-left">
+                          <div className="text-sm font-medium" style={{ color: "var(--accent)" }}>
+                            {item.product ? formatPrice(item.product.prix) : ""}
+                          </div>
+                          <div className="mt-0.5 text-xs" style={{ color: "var(--muted)" }}>boîte / mois</div>
                         </div>
-                        <div className="mt-0.5 text-xs" style={{ color: "var(--muted)" }}>boîte / mois</div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                   <div
-                    className="flex items-center justify-between px-5 py-3.5"
+                    className="flex shrink-0 items-center justify-between px-5 py-3.5"
                     style={{ background: "var(--paper)", borderTop: "1px solid var(--line)" }}
                   >
-                    <div className="text-[13px]" style={{ color: "var(--muted)" }}>Coût mensuel du protocole</div>
-                    <div className="text-[15px] font-medium" style={{ color: "var(--accent)" }}>{formatPrice(planTotal)}</div>
+                    <div className="text-[13px] leading-normal" style={{ color: "var(--muted)" }}>
+                      Coût mensuel du protocole
+                    </div>
+                    <div className="text-[15px] leading-normal font-medium" style={{ color: "var(--accent)" }}>
+                      {formatPrice(planTotal)}
+                    </div>
                   </div>
                 </div>
               ) : (
@@ -274,16 +305,29 @@ export function DossierView({
 
               {timeline.map((entry, i) => {
                 const isLast = i === timeline.length - 1;
-                const isLatestConsultation = entry.kind === "consultation" && entry.id === latest.id;
-                const isConfirmed = isLatestConsultation && Boolean(attachedNotes);
-                const accent = entry.kind === "biologie" ? "var(--muted)" : isConfirmed ? "var(--accent)" : "var(--line)";
+                const isNew = entry.kind === "consultation" && entry.id === highlightVisitId;
+                const accent = isNew
+                  ? "var(--accent)"
+                  : entry.kind === "biologie"
+                    ? "var(--muted)"
+                    : "var(--line)";
                 const typeLabel =
                   entry.kind === "biologie" ? "Biologie" : entry.kind === "ouverture" ? "Ouverture du dossier" : "Consultation";
                 const key = entry.kind === "biologie" ? `bio-${entry.date}` : entry.kind === "ouverture" ? "ouverture" : entry.id;
                 return (
                   <div
                     key={key}
-                    className="grid items-stretch gap-3 py-3.5"
+                    data-visit-id={entry.kind === "consultation" ? entry.id : undefined}
+                    className={`grid items-stretch gap-3 py-3.5${isNew ? " visit-flash" : ""}`}
+                    onAnimationEnd={
+                      isNew
+                        ? (e) => {
+                            if (e.target !== e.currentTarget) return;
+                            if (e.animationName !== "visit-flash") return;
+                            onHighlightDone?.();
+                          }
+                        : undefined
+                    }
                     style={{
                       gridTemplateColumns: "14px 1fr",
                       borderBottom: isLast ? "none" : "1px solid var(--line)",
@@ -326,28 +370,6 @@ export function DossierView({
                         })()
                       ) : entry.kind === "consultation" ? (
                         <div className="text-[12.5px] leading-relaxed" style={{ color: "var(--muted)" }}>{entry.motif}</div>
-                      ) : null}
-
-                      {isConfirmed && attachedNotes ? (
-                        <div className="mt-3 rounded-[10px] p-4" style={{ background: "var(--paper)" }}>
-                          <p className="text-[11px] font-semibold" style={{ color: "var(--accent)" }}>
-                            Note structurée · non appliquée au profil
-                          </p>
-                          <p className="mt-2 text-[13px]">
-                            {attachedNotes.motif.map((item) => item.text).join(" · ")}
-                          </p>
-                          <p className="mt-2 text-xs" style={{ color: "var(--muted)" }}>
-                            {attachedNotes.complements.filter(
-                              (x) =>
-                                actionOnNote(
-                                  x.produit_id,
-                                  patientDossier.recommandations_en_cours,
-                                ) === "ajout",
-                            ).length}{" "}
-                            complément(s) à
-                            ajouter · {attachedNotes.suivi.map((item) => item.text).join(" · ")}
-                          </p>
-                        </div>
                       ) : null}
                     </div>
                   </div>

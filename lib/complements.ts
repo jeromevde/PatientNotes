@@ -30,3 +30,34 @@ export function stoppedRecs<T extends { produit_id: string }>(
   const onNote = new Set(noteItems.map((c) => molecule(c.produit_id)));
   return recs.filter((r) => !onNote.has(molecule(r.produit_id)));
 }
+
+/** Apply a confirmed note onto the current plan. Arrêt drops a rec, maintien
+ *  keeps depuis and takes the note posologie, ajout is appended with aujourd'hui. */
+export function planAfterNote(
+  recs: CurrentRec[],
+  noteItems: { produit_id: string; posologie: string | null }[],
+  aujourdHui: string,
+): CurrentRec[] {
+  const byMol = new Map(noteItems.map((item) => [molecule(item.produit_id), item]));
+  const kept: CurrentRec[] = [];
+  const seen = new Set<string>();
+  for (const rec of recs) {
+    const mol = molecule(rec.produit_id);
+    const item = byMol.get(mol);
+    if (!item) continue;
+    seen.add(mol);
+    kept.push({
+      produit_id: item.produit_id,
+      posologie: item.posologie ?? rec.posologie,
+      depuis: rec.depuis,
+    });
+  }
+  const added = noteItems
+    .filter((item) => !seen.has(molecule(item.produit_id)))
+    .map((item) => ({
+      produit_id: item.produit_id,
+      posologie: item.posologie ?? "",
+      depuis: aujourdHui,
+    }));
+  return [...kept, ...added];
+}

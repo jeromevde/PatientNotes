@@ -84,7 +84,6 @@ grading is as follows:
 
 # Réponse video:
 
-
 - Le problématique: praticien qui passe plus de temps a tapper sur son clavier qu’a écouter et discuter avec son patient. Ou alors a besoin d’une secrétaire pour le faire
 - Choix produits:
     - Écran accueil simple avec l’essentiel
@@ -93,23 +92,22 @@ grading is as follows:
         - Historique consultation/biologie du patient
     - Main possibilité d’expand différentes partie si on veut plus de détails
     - Double panel avec highlighting pour l’explicabilité (pas blackbox)
-- Choix techniques: 
-    - Validation schema librairie ZOD
-    - 
-    - Demander tuples modèle (quote, fait) pour chaque fait dans la note structurée = sourcé
+- Choix techniques:
+    - Nextjs avec deployment sur vercel avec front REACT
     - Schema de la note en 5 parties
         - Motif, anamnèse, complément, hygiénique de vie, suivi
-    - Nextjs avec deployment sur vercel avec front REACt
-    - Injection du catalogue dans le prompt pour une solution 1 temps, rapide (plus tard embedding)
-    - 
+    - Velocité: un endpoint post, données moquées en json et pas de rétention des données (refresh pour reset la demo)
+    - Demander tuples modèle (quote, fait) pour chaque fait dans la note structurée = sourcé
+    - Simple requête json LLM Haiku, Injection du catalogue dans le prompt pour une solution 1 temps, rapide (plus tard embedding)
+    - Validation schema librairie ZOD
+    - Warning ID retourné inexistant est retourné ou si le modèle retourne pas de json
 - Utilisation IA: cursor en local, Claude design avec intégration claude code
 - 2 semaines de plus
     - Test stress test & benchmarking suite for rapid iteration later
     - Cost/performance modèle le mois cher
     - ZDR and no trustworthy model providers (medical data!)
-    - mobile friendly React PWA used by practitioner with
-        - audio recording
-        - photo parsing
+    - audio recording
+    - photo parsing
     - english as the code language with tranlsation options
     - simplycure stack compatible (AWS, terraform, go, ...)
     - multi-practicien , multi-patient, auth, ...

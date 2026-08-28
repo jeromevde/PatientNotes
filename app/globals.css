@@ -116,7 +116,22 @@ mark.quote-paint {
   vertical-align: baseline;
 }
 
-textarea::selection {
-  color: transparent;
-  background: var(--mark);
+@keyframes visit-flash {
+  from {
+    background: var(--mark);
+  }
+  to {
+    background: transparent;
+  }
+}
+
+.visit-flash {
+  margin-inline: -8px;
+  padding-inline: 8px;
+  border-radius: var(--radius);
+  animation: visit-flash 1.8s ease-out;
+}
+
+.plan-flash {
+  animation: visit-flash 1.8s ease-out;
 }
