@@ -32,7 +32,7 @@ export function ComplementCard({
   children?: ReactNode;
   className?: string;
   active?: boolean;
-} & Omit<LiHTMLAttributes<HTMLLIElement>, "children">) {
+} & Omit<LiHTMLAttributes<HTMLLIElement>, "children" | "title">) {
   const product = productById(produitId);
   const meta = [
     product ? `${formatPrice(product.prix)} / mois` : "Hors catalogue",
