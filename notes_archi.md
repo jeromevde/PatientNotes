@@ -84,7 +84,55 @@ grading is as follows:
 
 # Réponse video:
 
-- Le problématique: praticien qui passe plus de temps a tapper sur son clavier qu’a écouter et discuter avec son patient. Ou alors a besoin d’une secrétaire pour le faire
+Un court Loom / Claap (5-7 min) : le problème tel que tu l'as compris, tes choix produit, tes choix techniques, comment tu as utilisé l'IA, et ce que tu ferais avec 2 semaines de plus.
+
+
+## 1. Le problème (~45s)
+
+Dossier peu structuré + notes en vrac → le praticien tape au lieu d'écouter, ou il faut une secrétaire.
+
+## 2. Choix produit (~2 min)
+
+- Accueil = l'essentiel seulement: protocole en cours, biomarqueurs hors norme, historique. Le reste s'expand. Un praticien n'a pas le temps d'un dashboard avec plein de details
+- Flow: dossier → transcript + note sur le même écran → review → enregistrer. Pas de jonglage entre fenêtres.
+- Review obligatoire. Un dump auto, un praticien ne le signera pas.
+- Faits en lignes, pas un paragraphe: on édite une ligne, on highlight une quote.
+- Double panel + highlight quote↔fait = pas une black box. (Cliquer un fait ici.)
+- Arrêt / Ajout / Maintien est un label, jamais un champ. Le code l'infère du plan vs la note. Le praticien ne devrait pas écrire de l'admin.
+- Enregistrer rattache la note et met à jour le plan. Les biomarqueurs restent le pipeline labo. Refresh = reset demo.
+
+## 3. Choix techniques (~1 min 30) — des coupes, pas un stack
+
+- Next.js + React, un deploy Vercel. Stack Simplycure (Go/AWS) plus tard: le contrat JSON et le flow UI sont le vrai travail; traduire le backend c'est mécanique.
+- Note en 5 listes: motif, anamnèse, compléments, hygiène, suivi. Compléments = `produit_id` catalogue, jamais un nom libre.
+- Un POST `/api/notes`. Données mock en JSON. Pas de DB, pas d'auth, un patient. Refresh reset. La démo tourne toujours (LLM seulement si clé).
+- Un appel LLM (Haiku), JSON in / JSON out. Pas de chain. Catalogue injecté dans le prompt: assez petit ici, trop bête en prod → embeddings après.
+- Chaque fait = `(texte, quote)`. Quote pas verbatim dans le transcript → on la drop. Sourcé ou rien.
+- Zod valide la sortie. JSON cassé → note vide éditable, pas un crash. IDs catalogue inconnus: filtrés aujourd'hui (gap: les flagger).
+
+## 4. Utilisation IA (~1 min)
+
+Cursor en local pour coder. Claude Design / Claude Code pour l'UI.
+Plusiers IA web pour challenger des idées, screenshots et autre
+
+
+## 5. 2 semaines de plus (~45s) — 3 paris
+
+1. Suite d'eval (transcripts adverses) pour changer de modèle sans deviner.
+2. Retrieval catalogue (embed → top 10 → 2e passe). Le prompt unique ne scale pas.
+3. Audio in, même écran de review. Le produit ne change pas, seul l'input.
+
+Hors vidéo (échange Nicolas / Victor, pas le Loom):
+- modèle le moins cher qui tient l'eval
+- ZDR, provider en direct (pas d'intermédiaire) — données médicales
+- code EN + i18n
+- stack Simplycure (AWS, terraform, Go)
+- multi-praticien / multi-patient / auth
+- standard biologie? export réseau Wallon / BX / NL?
+
+
+
+- Le problématique: Dossier peu structuré + notes en vrac → le praticien tape au lieu d'écouter, ou il faut une secrétaire
 - Choix produits:
     - Écran accueil simple avec l’essentiel
         - Protocol en cours
@@ -104,10 +152,15 @@ grading is as follows:
 - Utilisation IA: cursor en local, Claude design avec intégration claude code
 - 2 semaines de plus
     - Test stress test & benchmarking suite for rapid iteration later
+    - Retrieval over the catalog (embeddings) before the catalog outgrows the prompt
+    - audio recording / photo parsing
+
+
+
+
+(and some extras)
     - Cost/performance modèle le mois cher
     - ZDR and no trustworthy model providers (medical data!)
-    - audio recording
-    - photo parsing
     - english as the code language with tranlsation options
     - simplycure stack compatible (AWS, terraform, go, ...)
     - multi-practicien , multi-patient, auth, ...
