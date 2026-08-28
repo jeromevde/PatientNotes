@@ -1,7 +1,7 @@
 "use client";
 
 // Tabs for the five note sections. Only this file knows the notes shape.
-// Complements use ComplementList, grouped by Arrêt / Ajout / Maintien.
+// Complements use ComplementList: one list, action as a label on the card.
 
 import { useEffect, useLayoutEffect, useRef } from "react";
 import { ComplementList } from "@/components/ComplementList";
@@ -132,7 +132,7 @@ function ClaimList({
               }}
               placeholder={isAdd ? "Ajouter un fait…" : undefined}
               className={`quote-paint col-start-1 row-start-1 m-0 min-w-0 w-full border-0 p-0 text-sm leading-relaxed outline-none text-ink ${
-                on ? "bg-mark underline decoration-2 underline-offset-4 decoration-accent" : "bg-transparent"
+                on ? "bg-mark underline decoration-2 decoration-accent" : "bg-transparent"
               }`}
             />
             </div>
@@ -186,7 +186,7 @@ export function NotesEditor({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div className="flex flex-wrap gap-1 pb-3" style={{ borderBottom: "1px solid #E6DFD1" }}>
+      <div className="flex flex-wrap gap-1" style={{ borderBottom: "1px solid var(--line)" }}>
         {noteTabs.map((t) => {
           const active = t.id === tab;
           return (
@@ -194,15 +194,19 @@ export function NotesEditor({
               key={t.id}
               type="button"
               onClick={() => onTabChange(t.id)}
-              className="inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-medium"
+              className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium"
               style={
                 active
-                  ? { background: "#2E6B4F", color: "#FFFDF9" }
-                  : { background: "transparent", color: "#3A342A" }
+                  ? {
+                      color: "var(--ink)",
+                      borderBottom: "2px solid var(--accent)",
+                      marginBottom: -1,
+                    }
+                  : { background: "transparent", color: "var(--muted)" }
               }
             >
               {t.label}
-              <span style={{ fontSize: 11.5, color: active ? "rgba(255,253,249,0.75)" : "#9A9285" }}>
+              <span className="text-[11.5px]" style={{ color: "var(--muted)" }}>
                 {tabCounts[t.id]}
               </span>
             </button>

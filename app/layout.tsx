@@ -1,26 +1,13 @@
-// Shell around every page: one font pair, one palette, both screens.
+// Shell: Poppins + Simplycure catalog colors, both screens.
 
 import type { Metadata } from "next";
-import { IBM_Plex_Mono, Instrument_Sans, Newsreader } from "next/font/google";
+import { Poppins } from "next/font/google";
 import "./globals.css";
 
-const sans = Instrument_Sans({
+const sans = Poppins({
   subsets: ["latin"],
-  weight: ["400", "500", "600"],
+  weight: ["400", "500", "600", "700"],
   variable: "--font-sans",
-});
-
-const serif = Newsreader({
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
-  style: ["normal", "italic"],
-  variable: "--font-serif",
-});
-
-const mono = IBM_Plex_Mono({
-  subsets: ["latin"],
-  weight: ["400", "500"],
-  variable: "--font-mono",
 });
 
 export const metadata: Metadata = {
@@ -35,9 +22,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr">
-      <body className={`${sans.variable} ${serif.variable} ${mono.variable}`}>
-        {children}
-      </body>
+      <body className={`${sans.variable} ${sans.className}`}>{children}</body>
     </html>
   );
 }

@@ -1,8 +1,8 @@
 "use client";
 
-// Editable supplements. Arrêt / Ajout / Maintien is inferred from the current recs,
-// never picked. Search adds a product to the note. Retirer drops it (a current rec
-// then shows up under Arrêt). Remettre puts a stopped rec back on the note.
+// One list: plan order, then new ajouts. Arrêt / Maintien / Ajout is a label
+// on the card, inferred. Retirer on a plan product stops it in place; Remettre
+// restores it. Retirer on an ajout drops the row. Search appends at the bottom.
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -19,31 +19,11 @@ import { scrollIfNeeded } from "@/lib/scroll";
 import type { ComplementAction, ComplementRec } from "@/lib/types";
 import type { CurrentRec } from "@/lib/complements";
 
-const groups: {
-  action: ComplementAction;
-  label: string;
-  color: string;
-  empty: string;
-}[] = [
-  {
-    action: "arret",
-    label: "Arrêt",
-    color: "#B9752B",
-    empty: "Aucun arrêt.",
-  },
-  {
-    action: "maintien",
-    label: "Maintien",
-    color: "#2E6B4F",
-    empty: "Aucun maintien.",
-  },
-  {
-    action: "ajout",
-    label: "Ajout",
-    color: "#2E6B4F",
-    empty: "Aucun ajout.",
-  },
-];
+const ACTION: Record<ComplementAction, { label: string; color: string }> = {
+  arret: { label: "Arrêt", color: "var(--muted)" },
+  maintien: { label: "Maintien", color: "var(--accent)" },
+  ajout: { label: "Ajout", color: "var(--accent-2)" },
+};
 
 export function ComplementList({
   items,
@@ -66,16 +46,26 @@ export function ComplementList({
 }) {
   const rootRef = useRef<HTMLDivElement>(null);
   const stopped = stoppedRecs(currentRecs, items);
-  const byAction: Record<ComplementAction, ComplementRec[]> = {
-    arret: stopped.map((r) => ({
-      produit_id: r.produit_id,
-      posologie: r.posologie,
-      duree: null,
-      quote: null,
-    })),
-    ajout: items.filter((item) => actionOnNote(item.produit_id, currentRecs) === "ajout"),
-    maintien: items.filter((item) => actionOnNote(item.produit_id, currentRecs) === "maintien"),
-  };
+
+  const rows: { action: ComplementAction; item: ComplementRec; rec?: CurrentRec }[] = [
+    ...currentRecs.map((rec) => {
+      const item = items.find((i) => actionOnNote(i.produit_id, [rec]) === "maintien");
+      if (item) return { action: "maintien" as const, item, rec };
+      return {
+        action: "arret" as const,
+        item: {
+          produit_id: rec.produit_id,
+          posologie: rec.posologie,
+          duree: null,
+          quote: null,
+        },
+        rec,
+      };
+    }),
+    ...items
+      .filter((item) => actionOnNote(item.produit_id, currentRecs) === "ajout")
+      .map((item) => ({ action: "ajout" as const, item })),
+  ];
 
   useEffect(() => {
     if (!focusQuote || !rootRef.current) return;
@@ -105,115 +95,98 @@ export function ComplementList({
   }
 
   return (
-    <div ref={rootRef} className="space-y-6">
-      {groups.map((group) => {
-        const rows = byAction[group.action];
-        const isArret = group.action === "arret";
-        return (
-          <section key={group.action}>
-            <h3
-              className="text-xs font-semibold uppercase tracking-[0.14em]"
-              style={{ color: group.color }}
-            >
-              {group.label}
-            </h3>
-            {rows.length === 0 ? (
-              <p className="mt-2 text-sm" style={{ color: "#9A9285" }}>
-                {group.empty}
-              </p>
-            ) : (
-              <ul className="mt-2 space-y-3">
-                {rows.map((item) => (
-                  <ComplementCard
-                    key={item.produit_id}
-                    produitId={item.produit_id}
-                    depuis={
-                      isArret
-                        ? currentRecs.find((r) => r.produit_id === item.produit_id)?.depuis
-                        : undefined
-                    }
-                    onClick={() =>
-                      onFocusQuote(
-                        complementHighlight(transcript, item.produit_id),
-                      )
-                    }
-                    active={
-                      Boolean(focusQuote) &&
-                      complementHighlight(transcript, item.produit_id) ===
-                        focusQuote
-                    }
-                    trailing={
-                      isArret ? (
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            const rec = currentRecs.find(
-                              (r) => r.produit_id === item.produit_id,
-                            );
-                            onAdd(item.produit_id, rec);
-                          }}
-                          style={{ fontSize: 12.5, color: "#2E6B4F" }}
-                          className="hover:underline"
-                        >
-                          Remettre
-                        </button>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onRemove(item.produit_id);
-                          }}
-                          style={{ fontSize: 12.5, color: "#B9752B" }}
-                          className="hover:text-[#8A5320]"
-                        >
-                          Retirer
-                        </button>
-                      )
-                    }
-                  >
-                    {isArret ? null : (
-                      <div
-                        className="mt-3.5 grid gap-3 sm:grid-cols-2"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <ComplementField label="Durée">
-                          <input
-                            value={item.duree ?? ""}
-                            onChange={(e) =>
-                              onPatch(item.produit_id, {
-                                duree: e.target.value || null,
-                              })
-                            }
-                            placeholder="ex. 1 mois"
-                            className={fieldBox}
-                            style={fieldBoxStyle}
-                          />
-                        </ComplementField>
-                        <ComplementField label="Posologie">
-                          <input
-                            value={item.posologie ?? ""}
-                            onChange={(e) =>
-                              onPatch(item.produit_id, {
-                                posologie: e.target.value || null,
-                              })
-                            }
-                            placeholder="ex. 1 gélule matin"
-                            className={fieldBox}
-                            style={fieldBoxStyle}
-                          />
-                        </ComplementField>
-                      </div>
-                    )}
-                  </ComplementCard>
-                ))}
-              </ul>
-            )}
-          </section>
-        );
-      })}
-      <CatalogSearch takenIds={items.map((c) => c.produit_id)} onPick={pick} />
+    <div ref={rootRef}>
+      {rows.length > 0 ? (
+        <ul className="space-y-3">
+          {rows.map(({ action, item, rec }) => {
+            const meta = ACTION[action];
+            const isArret = action === "arret";
+            return (
+              <ComplementCard
+                key={item.produit_id}
+                produitId={item.produit_id}
+                depuis={rec?.depuis}
+                onClick={() =>
+                  onFocusQuote(complementHighlight(transcript, item.produit_id))
+                }
+                active={
+                  Boolean(focusQuote) &&
+                  complementHighlight(transcript, item.produit_id) === focusQuote
+                }
+                title={
+                  <p className="text-[15px] font-semibold" style={{ color: meta.color }}>
+                    {meta.label}
+                  </p>
+                }
+                trailing={
+                  isArret ? (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onAdd(item.produit_id, rec);
+                      }}
+                      style={{ fontSize: 12.5, color: "var(--accent)" }}
+                      className="hover:underline"
+                    >
+                      Remettre
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onRemove(item.produit_id);
+                      }}
+                      style={{ fontSize: 12.5, color: "var(--muted)" }}
+                      className="hover:underline"
+                    >
+                      Retirer
+                    </button>
+                  )
+                }
+              >
+                <div
+                  className="mt-3.5 grid gap-3 sm:grid-cols-2"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <ComplementField label="Durée">
+                    <input
+                      value={item.duree ?? ""}
+                      disabled={isArret}
+                      onChange={(e) =>
+                        onPatch(item.produit_id, {
+                          duree: e.target.value || null,
+                        })
+                      }
+                      placeholder="ex. 1 mois"
+                      className={fieldBox}
+                      style={fieldBoxStyle}
+                    />
+                  </ComplementField>
+                  <ComplementField label="Posologie">
+                    <input
+                      value={item.posologie ?? ""}
+                      disabled={isArret}
+                      onChange={(e) =>
+                        onPatch(item.produit_id, {
+                          posologie: e.target.value || null,
+                        })
+                      }
+                      placeholder="ex. 1 gélule matin"
+                      className={fieldBox}
+                      style={fieldBoxStyle}
+                    />
+                  </ComplementField>
+                </div>
+              </ComplementCard>
+            );
+          })}
+        </ul>
+      ) : null}
+      <div className={rows.length > 0 ? "mt-4" : undefined}>
+        <CatalogSearch takenIds={items.map((c) => c.produit_id)} onPick={pick} />
+      </div>
     </div>
   );
 }
@@ -248,16 +221,17 @@ function CatalogSearch({
           window.setTimeout(() => setOpen(false), 150);
         }}
         placeholder="Ajouter un produit au catalogue…"
-        className="w-full rounded-xl px-4 py-3 text-sm outline-none"
-        style={{ background: "#FFFDF9", border: "1px solid #E6DFD1", color: "#1C1B18" }}
+        className="w-full px-4 py-3 text-sm outline-none"
+        style={{
+          background: "var(--paper)",
+          color: "var(--ink)",
+          borderRadius: "var(--radius)",
+        }}
       />
       {open ? (
-        <ul
-          className="mt-2 max-h-48 overflow-y-auto rounded-xl p-1.5"
-          style={{ background: "#FFFDF9", border: "1px solid #E6DFD1" }}
-        >
+        <ul className="sc-card mt-2 max-h-48 overflow-y-auto p-1.5">
           {matches.length === 0 ? (
-            <li className="px-2 py-2 text-sm" style={{ color: "#9A9285" }}>
+            <li className="px-2 py-2 text-sm" style={{ color: "var(--muted)" }}>
               Aucun produit.
             </li>
           ) : (
@@ -271,7 +245,7 @@ function CatalogSearch({
                     setQuery("");
                     setOpen(false);
                   }}
-                  className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-sm hover:bg-[#F0F4EF]"
+                  className="flex w-full items-center gap-2 rounded px-2.5 py-2 text-left text-sm hover:bg-paper"
                 >
                   <LabMark lab={p.labo} size={20} />
                   <span>

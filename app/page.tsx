@@ -69,8 +69,8 @@ export default function HomePage() {
         setStatus({
           kind: "error",
           message:
-            (data.error || "L'extraction a échoué. Réessayez la génération.") +
-            (fallback ? " La note ci-contre est vide, à compléter manuellement." : ""),
+            (data.error || "Échec de l'extraction. Réessayer.") +
+            (fallback ? " La note est vide, à compléter à la main." : ""),
         });
         if (fallback) setDraft(emptyNotes());
         return;
@@ -88,12 +88,7 @@ export default function HomePage() {
       }
       setDraft(notes as ConsultationNotes);
       setStatus(
-        warning
-          ? { kind: "warning", message: warning as string }
-          : {
-              kind: "ok",
-              message: "Extraction réussie : toutes les informations ont été correctement identifiées.",
-            },
+        warning ? { kind: "warning", message: warning as string } : null,
       );
     } catch (e) {
       console.error("[generate] client-side failure before/during the request:", e);
@@ -102,8 +97,8 @@ export default function HomePage() {
       setStatus({
         kind: "error",
         message:
-          `L'extraction a échoué : impossible de contacter le service d'IA (${detail}). Vérifiez la connexion et réessayez.` +
-          (fallback ? " La note ci-contre est vide, à compléter manuellement." : ""),
+          `Échec de l'extraction. Réessayer.` +
+          (fallback ? " La note est vide, à compléter à la main." : ""),
       });
       if (fallback) setDraft(emptyNotes());
     } finally {
@@ -128,7 +123,7 @@ export default function HomePage() {
 
   return (
     <div className="flex h-dvh flex-col">
-      <div className="shrink-0 border-b border-line bg-warn-soft px-5 py-2 text-center text-xs text-warn">
+      <div className="shrink-0 border-b border-line bg-card px-5 py-2 text-center text-xs text-muted">
         Prototype Simplycure · données 100 % fictives · ne pas utiliser de vraies données
         patient
       </div>

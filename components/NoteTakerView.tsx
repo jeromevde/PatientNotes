@@ -3,7 +3,7 @@
 // Note-taker workspace: transcript and structured notes are two panes.
 // Each pane scrolls on its own. After Generate, quotes on the open tab paint the transcript.
 
-import { useState, type CSSProperties } from "react";
+import { useState } from "react";
 import { NotesEditor, noteTabs } from "@/components/NotesEditor";
 import { TranscriptView } from "@/components/TranscriptView";
 import { patientDossier, sampleTranscript } from "@/lib/data";
@@ -11,21 +11,7 @@ import { formatDate } from "@/lib/format";
 import { quotesForTab, type NoteTab } from "@/lib/quotes";
 import type { ConsultationNotes } from "@/lib/types";
 
-const serifFont = { fontFamily: "var(--font-serif), Georgia, serif" };
-
 export type ExtractionStatus = { kind: "ok" | "warning" | "error"; message: string };
-
-const STATUS_STYLE: Record<ExtractionStatus["kind"], CSSProperties> = {
-  ok: { background: "var(--accent-soft)", color: "var(--accent)", borderColor: "var(--line)" },
-  warning: { background: "var(--warn-soft)", color: "var(--warn)", borderColor: "var(--line)" },
-  error: { background: "#F9E4E1", color: "#A23B2E", borderColor: "#F0CFC8" },
-};
-
-const STATUS_ICON: Record<ExtractionStatus["kind"], string> = {
-  ok: "✓",
-  warning: "⚠",
-  error: "✕",
-};
 
 function ExtractionWait() {
   return (
@@ -34,9 +20,12 @@ function ExtractionWait() {
         {noteTabs.map((t, i) => (
           <span
             key={t.id}
-            className={`rounded-full px-3 py-1.5 text-xs font-medium ${
-              i === 0 ? "bg-accent text-white" : "text-muted"
+            className={`px-3 py-1.5 text-sm font-medium ${
+              i === 0
+                ? "text-ink"
+                : "text-muted"
             }`}
+            style={i === 0 ? { borderBottom: "2px solid var(--accent)" } : undefined}
           >
             {t.label}
           </span>
@@ -61,12 +50,9 @@ function GeneratePrompt({
   disabled: boolean;
 }) {
   return (
-    <div
-      className="rounded-2xl p-6"
-      style={{ background: "var(--card)", border: "1px solid var(--line)" }}
-    >
-      <div style={{ ...serifFont, fontSize: 20, marginBottom: 8 }}>Générer la note structurée</div>
-      <p style={{ fontSize: 13.5, color: "#6E6759", lineHeight: 1.6, marginBottom: 20 }}>
+    <div>
+      <div className="mb-2 text-[15px] font-semibold">Générer la note structurée</div>
+      <p className="mb-5 text-[13.5px] leading-relaxed" style={{ color: "var(--muted)" }}>
         Le transcript est analysé avec le plan en cours et le catalogue produits. Chaque élément extrait
         reste rattaché à sa citation source et rien n&rsquo;entre au dossier sans validation du praticien.
       </p>
@@ -74,13 +60,12 @@ function GeneratePrompt({
         type="button"
         onClick={onGenerate}
         disabled={disabled}
-        className="w-full rounded-lg px-4 py-3 text-sm font-medium disabled:opacity-50"
-        style={{ background: "#2E6B4F", color: "#FFFDF9" }}
+        className="btn btn-primary"
       >
-        Analyser la consultation
+        Générer la note
       </button>
       {disabled ? (
-        <p className="mt-2 text-center" style={{ fontSize: 12, color: "#9A9285" }}>
+        <p className="mt-2 text-xs" style={{ color: "var(--muted)" }}>
           Collez un transcript d&rsquo;au moins 20 caractères pour activer l&rsquo;analyse.
         </p>
       ) : null}
@@ -114,72 +99,60 @@ export function NoteTakerView({
   const canGenerate = !loading && transcript.trim().length >= 20;
 
   return (
-    <div className="flex h-full min-h-0 flex-col">
+    <div className="flex h-full min-h-0 flex-col" style={{ background: "var(--paper)" }}>
       <header
-        className="flex shrink-0 flex-wrap items-center justify-between gap-4 border-b px-6 py-4"
-        style={{ background: "var(--paper)", borderColor: "var(--line)" }}
+        className="flex shrink-0 flex-wrap items-center justify-between gap-4 border-b bg-card px-6 py-3"
+        style={{ borderColor: "var(--line)" }}
       >
         <div>
           <button
             type="button"
             onClick={onBack}
-            className="mb-1.5 inline-block text-xs hover:text-[#2E6B4F]"
-            style={{ color: "#8A8377" }}
+            className="mb-1 inline-block text-xs hover:text-accent"
+            style={{ color: "var(--muted)" }}
           >
-            ← Dossier
+            ← Retour
           </button>
-          <h1 style={{ ...serifFont, fontSize: 29, lineHeight: 1.05, letterSpacing: "-0.01em", color: "var(--ink)" }}>
+          <h1 className="text-[18px] font-semibold leading-tight" style={{ color: "var(--ink)" }}>
             Note de consultation
           </h1>
-          <p style={{ fontSize: 13, color: "#8A8377", marginTop: 5 }}>
-            {patientDossier.patient.prenom} {patientDossier.patient.nom} · {formatDate(sampleTranscript.date)} ·{" "}
-            {notes ? "à vérifier avant de confirmer" : "à analyser"}
+          <p className="mt-1 text-[13px]" style={{ color: "var(--muted)" }}>
+            {patientDossier.patient.prenom} {patientDossier.patient.nom} · {formatDate(sampleTranscript.date)}
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          {notes ? (
-            <span
-              className="rounded-full px-3 py-1.5 text-xs font-medium"
-              style={{ background: "#E4EBE3", color: "#3D6047", border: "1px solid #D6E1D7" }}
-            >
-              {notes.used_llm ? "Généré par le modèle" : "Notes mockées (pas de clé API)"}
-            </span>
-          ) : null}
-          <button
-            type="button"
-            disabled={!canGenerate}
-            onClick={onGenerate}
-            className="rounded-full px-4 py-2 text-sm font-medium disabled:opacity-50"
-            style={{ background: "#2E6B4F", color: "#FFFDF9" }}
-          >
-            {loading ? "Génération…" : notes ? "Regénérer" : "Générer les notes"}
-          </button>
-          <button
-            type="button"
-            disabled={!notes || loading}
-            onClick={onConfirm}
-            className="rounded-full px-4 py-2 text-sm font-medium disabled:opacity-40"
-            style={{ background: "#FFFDF9", color: "#2E6B4F", border: "1px solid #2E6B4F" }}
-          >
-            Confirmer
-          </button>
-        </div>
+        {notes ? (
+          <div className="flex flex-col items-end gap-1.5">
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              <button
+                type="button"
+                disabled={!canGenerate}
+                onClick={onGenerate}
+                className="btn btn-secondary"
+              >
+                {loading ? "Génération…" : "Regénérer"}
+              </button>
+              <button
+                type="button"
+                disabled={loading}
+                onClick={onConfirm}
+                className="btn btn-primary"
+              >
+                Enregistrer dans le dossier patient
+              </button>
+            </div>
+            {status && status.kind !== "ok" ? (
+              <p className="max-w-md text-right text-[13px]" style={{ color: "var(--muted)" }}>
+                {status.message}
+              </p>
+            ) : null}
+          </div>
+        ) : null}
       </header>
 
-      {status ? (
-        <div
-          className="flex shrink-0 items-center gap-2 border-b px-5 py-2.5 text-sm"
-          style={STATUS_STYLE[status.kind]}
-        >
-          <span style={{ fontWeight: 600 }}>{STATUS_ICON[status.kind]}</span>
-          <span>{status.message}</span>
-        </div>
-      ) : null}
-
-      <div className="grid min-h-0 flex-1 grid-rows-2 lg:grid-cols-2 lg:grid-rows-1">
-        <section className="flex min-h-0 flex-col overflow-hidden border-b border-line lg:border-b-0 lg:border-r">
-          <div className="shrink-0 px-5 pt-4">
-            <label className="text-xs font-medium uppercase tracking-[0.14em] text-muted">
+      <div className="grid min-h-0 flex-1 grid-rows-2 gap-4 p-4 lg:grid-cols-2 lg:grid-rows-1">
+        <section className="sc-card flex min-h-0 flex-col overflow-hidden">
+          <div className="shrink-0 px-4 pt-3">
+            <label className="text-[13px] font-medium" style={{ color: "var(--muted)" }}>
               Transcript
             </label>
           </div>
@@ -193,8 +166,8 @@ export function NoteTakerView({
           />
         </section>
 
-        <section className="flex min-h-0 flex-col overflow-hidden px-5 py-4">
-          <p className="mb-3 shrink-0 text-xs font-medium uppercase tracking-[0.14em] text-muted">
+        <section className="sc-card flex min-h-0 flex-col overflow-hidden px-4 py-3">
+          <p className="mb-3 shrink-0 text-[13px] font-medium" style={{ color: "var(--muted)" }}>
             Notes structurées
           </p>
           {loading ? (

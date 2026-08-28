@@ -1,21 +1,18 @@
-/* One palette and one font stack for dossier and note-taker. */
+/* Tokens sampled from app.simplycure.com/public-catalog. One look for dossier and note-taker. */
 
 @import "tailwindcss";
 
 :root {
-  --paper: #f7f3ea;
-  --ink: #1c1b18;
-  --muted: #8a8377;
-  --line: #e6dfd1;
-  --card: #fffdf9;
-  --accent: #2e6b4f;
-  --accent-soft: #e4ebe3;
-  --warn: #b9752b;
-  --warn-soft: #fcf3e7;
-  --mark: #e4e0d8;
-  --mark-on: #8a8680;
-  --keep: #2e6b4f;
-  --keep-soft: #e4ebe3;
+  --paper: #f8f9fc;
+  --ink: #080038;
+  --muted: #6b6688;
+  --line: #e6e4ee;
+  --card: #ffffff;
+  --accent: #3a845e;
+  --accent-2: color-mix(in srgb, var(--accent) 70%, var(--card));
+  --mark: #e8f3ec;
+  --radius: 8px;
+  --radius-card: 12px;
 }
 
 @theme inline {
@@ -25,13 +22,8 @@
   --color-line: var(--line);
   --color-card: var(--card);
   --color-accent: var(--accent);
-  --color-accent-soft: var(--accent-soft);
-  --color-warn: var(--warn);
-  --color-warn-soft: var(--warn-soft);
+  --color-accent-2: var(--accent-2);
   --color-mark: var(--mark);
-  --color-mark-on: var(--mark-on);
-  --color-keep: var(--keep);
-  --color-keep-soft: var(--keep-soft);
 }
 
 * {
@@ -51,11 +43,7 @@ body {
 }
 
 .font-serif {
-  font-family: var(--font-serif), Georgia, serif;
-}
-
-.font-mono {
-  font-family: var(--font-mono), ui-monospace, monospace;
+  font-family: var(--font-sans), Helvetica, Arial, sans-serif;
 }
 
 button,
@@ -64,23 +52,71 @@ input {
   font-family: inherit;
 }
 
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: var(--radius);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.2;
+  padding: 8px 16px;
+  border: none;
+  cursor: pointer;
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: var(--card);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--accent);
+}
+
+.sc-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+}
+
+.sc-pill {
+  display: inline-block;
+  border-radius: 999px;
+  background: var(--card);
+  padding: 3px 10px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
 .caret-ink {
   caret-color: var(--ink);
 }
 
-/* Transcript quotes and focused facts share one bar height: the line box. */
 .quote-paint {
-  border-radius: 2px;
-  padding-inline: 0.125rem;
+  border-radius: var(--radius);
   -webkit-box-decoration-break: clone;
   box-decoration-break: clone;
+  text-decoration-skip-ink: none;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 2px;
 }
 
+/* Inline marks: no vertical padding. Extra top/bottom pad on an inline box
+   makes the start of a wrap taller than the end of the line. */
 mark.quote-paint {
-  padding-block: 2px;
+  padding: 0 0.3em;
+  vertical-align: baseline;
 }
 
 textarea::selection {
   color: transparent;
-  background: color-mix(in srgb, var(--accent) 30%, transparent);
+  background: var(--mark);
 }
