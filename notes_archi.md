@@ -79,3 +79,39 @@ grading is as follows:
  - stress test with adverserial transcripts
 
  - Clearly passing the full catalog on every request to the LLM is a dumb idea and only for this demo. In practice I expected Simplycure catalog to be quite large and not necessarily (or be costly to do so) fit in an llm context window. I'd design a quick intermediate step with an Openai's embedding model text-embedding-3-small to query a predefined list of 10 close matches to the extracted text and then a second call to decide which one of those. In practice this happens in the background when the user has not even opened the supplement tab so he wouldn't even notice the delay.
+
+
+
+# Réponse video:
+
+
+- Le problématique: praticien qui passe plus de temps a tapper sur son clavier qu’a écouter et discuter avec son patient. Ou alors a besoin d’une secrétaire pour le faire
+- Choix produits:
+    - Écran accueil simple avec l’essentiel
+        - Protocol en cours
+        - Biomarquers récents problématiques
+        - Historique consultation/biologie du patient
+    - Main possibilité d’expand différentes partie si on veut plus de détails
+    - Double panel avec highlighting pour l’explicabilité (pas blackbox)
+- Choix techniques: 
+    - Validation schema librairie ZOD
+    - 
+    - Demander tuples modèle (quote, fait) pour chaque fait dans la note structurée = sourcé
+    - Schema de la note en 5 parties
+        - Motif, anamnèse, complément, hygiénique de vie, suivi
+    - Nextjs avec deployment sur vercel avec front REACt
+    - Injection du catalogue dans le prompt pour une solution 1 temps, rapide (plus tard embedding)
+    - 
+- Utilisation IA: cursor en local, Claude design avec intégration claude code
+- 2 semaines de plus
+    - Test stress test & benchmarking suite for rapid iteration later
+    - Cost/performance modèle le mois cher
+    - ZDR and no trustworthy model providers (medical data!)
+    - mobile friendly React PWA used by practitioner with
+        - audio recording
+        - photo parsing
+    - english as the code language with tranlsation options
+    - simplycure stack compatible (AWS, terraform, go, ...)
+    - multi-practicien , multi-patient, auth, ...
+    - is there a STANDARD for biology tests ?
+    - Export / Import réseau de santé Wallon/BX/NL ?

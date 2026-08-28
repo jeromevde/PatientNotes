@@ -88,7 +88,6 @@ export function DossierView({
           <div
             className="flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold"
             style={{ background: "var(--accent)", color: "var(--card)" }}
-            style={{ background: "var(--accent)" }}
             aria-hidden
           >
             S

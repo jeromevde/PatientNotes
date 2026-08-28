@@ -92,7 +92,6 @@ export default function HomePage() {
       );
     } catch (e) {
       console.error("[generate] client-side failure before/during the request:", e);
-      const detail = e instanceof Error ? e.message : String(e);
       const fallback = !draft;
       setStatus({
         kind: "error",
